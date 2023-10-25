@@ -7,6 +7,7 @@ add_executable(main
         ${CMAKE_SOURCE_DIR}/src/error.c
         ${CMAKE_SOURCE_DIR}/src/io/input.c
         ${CMAKE_SOURCE_DIR}/src/io/output.c
+        ${CMAKE_SOURCE_DIR}/src/io/file.c
         )
 target_include_directories(main PUBLIC "${CMAKE_SOURCE_DIR}/includes")
 

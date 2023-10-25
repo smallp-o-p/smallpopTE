@@ -7,14 +7,34 @@
 #include <stdlib.h> 
 #include <errno.h> 
 #include <sys/ioctl.h>
-struct terminalConfig{
-    int rows;
-    int cols; 
-    struct termios terminal;
-} extern E; 
-
+#include <signal.h>
+#include <time.h>
+#include <stdarg.h>
 
 /*
     Includes that should be present everywhere
-
 */
+
+struct rowOfText{
+    int len; 
+    char* text; // raw text 
+    int renderSize;
+    char* render; // text converted to work with our text editor
+}; 
+struct terminalConfig{
+    int cursor_x, cursor_y; 
+    int render_x; 
+    int rows;
+    int rowOffset;
+    int cols; 
+    int colOffset; 
+    int numRowsofText; 
+    struct rowOfText* textRows; 
+    struct termios terminal;
+    char* filename; 
+    char statusmsg[80];
+    time_t statusmsg_time; 
+} extern E; 
+
+
+
