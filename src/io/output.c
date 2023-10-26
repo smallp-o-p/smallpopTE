@@ -1,6 +1,6 @@
 #define _BSD_SOURCE
 #define _GNU_SOURCE
-#define _DEFAULT_SOURCE 
+#define _DEFAULT_SOURCE
 
 #include "pch.h"
 #include "output.h"
@@ -57,7 +57,7 @@ void drawRows(char c, struct dynamic_text_buffer *buf)
         }
         append2Buffer(buf, "\x1b[K", 3);
         append2Buffer(buf, "\r\n", 2);
-        }
+    }
 }
 
 void scrollHandler()
@@ -85,48 +85,57 @@ void scrollHandler()
     }
 }
 
-void drawStatusBar(struct dynamic_text_buffer* buf){
-    append2Buffer(buf, "\x1b[1;7m",6);
+void drawStatusBar(struct dynamic_text_buffer *buf)
+{
+    append2Buffer(buf, "\x1b[1;7m", 6);
     char statusText[80], rstatus[80];
-    int len = snprintf(statusText, sizeof(statusText), 
-                "%.20s - %d lines", 
-                E.filename ? E.filename : "[Blank File]", E.numRowsofText);
-    if(len > E.cols){
+    int len = snprintf(statusText, sizeof(statusText),
+                       "%.20s - %d lines",
+                       E.filename ? E.filename : "[Blank File]", E.numRowsofText);
+    if (len > E.cols)
+    {
         len = E.cols;
     }
     append2Buffer(buf, statusText, len);
 
-    int rlen = snprintf(rstatus, sizeof(rstatus), "%d/%d", E.cursor_y+1, E.numRowsofText+1); 
+    int rlen = snprintf(rstatus, sizeof(rstatus), "%d/%d", E.cursor_y + 1, E.numRowsofText + 1);
 
-    while(len < E.cols){
-        if(E.cols - len == rlen){
+    while (len < E.cols)
+    {
+        if (E.cols - len == rlen)
+        {
             append2Buffer(buf, rstatus, rlen);
-            break; 
+            break;
         }
-        else{
+        else
+        {
             append2Buffer(buf, " ", 1);
             len++;
         }
     }
-    append2Buffer(buf, "\x1b[m",3); 
-    append2Buffer(buf, "\r\n", 2); 
+    append2Buffer(buf, "\x1b[m", 3);
+    append2Buffer(buf, "\r\n", 2);
 }
 
-void setStatusMessage(const char* stat, ...){
-    va_list ap; 
+void setStatusMessage(const char *stat, ...)
+{
+    va_list ap;
     va_start(ap, stat);
     vsnprintf(E.statusmsg, sizeof(E.statusmsg), stat, ap);
     va_end(ap);
     E.statusmsg_time = time(NULL);
 }
 
-void drawStatusMessage(struct dynamic_text_buffer* buf){
-    append2Buffer(buf, "\x1b[k", 3); 
+void drawStatusMessage(struct dynamic_text_buffer *buf)
+{
+    append2Buffer(buf, "\x1b[k", 3);
     int len = strlen(E.statusmsg);
-    if(len > E.cols){
+    if (len > E.cols)
+    {
         len = E.cols;
     }
-    if(len && time(NULL) - E.statusmsg_time <5){
-        append2Buffer(buf, E.statusmsg, len); 
+    if (len && time(NULL) - E.statusmsg_time < 5)
+    {
+        append2Buffer(buf, E.statusmsg, len);
     }
 }
