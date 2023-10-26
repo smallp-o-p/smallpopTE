@@ -21,6 +21,7 @@ void cleanup(){
     if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.terminal) == -1){
         die("tcsetattr");
     }
+    fclose(E.fp);
 }
 
 int handleEsc(char c){

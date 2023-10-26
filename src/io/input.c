@@ -15,6 +15,18 @@ void processKey()
     clearScreen();
     exit(0);
     break;
+  case(CTRL_MACRO('c')):
+    copyText(E.textRows[E.cursor_y].text[E.cursor_x]);
+    break;
+  case(CTRL_MACRO('v')):
+    insertChar(E.cvBuf.copied, &E.textRows[E.cursor_y], E.cursor_x);
+    break; 
+  case(CTRL_MACRO('s')):
+    writeToFile(E.filename);
+    break; 
+  case(CTRL_MACRO('m')): // enter;
+    addRowAt(E.cursor_y+1, (E.textRows[E.cursor_y]).text + E.cursor_x+1, E.textRows[E.cursor_y].len - (E.cursor_x+1));
+    break; 
   case(DELETE):
     delChar(c, &E.textRows[E.cursor_y], E.cursor_x);
     break;
@@ -52,9 +64,18 @@ void processKey()
     moveCursor(c);
     break;
   default:
-    insertChar(c, &E.textRows[E.cursor_y], E.cursor_x);
+  {
+    if(E.cursor_y == E.numRowsofText){ // we're at the bottom 
+      addRow((char*) &c, 1); // create a line
+      E.cursor_x--;
+    }
+    else{
+      insertChar(c, &E.textRows[E.cursor_y], E.cursor_x);
+    }
     moveCursor(ARROW_RIGHT);
     break;
+  }
+
   }
 }
 
@@ -132,7 +153,7 @@ void append2Buffer(struct dynamic_text_buffer *buf, char *str, int addedLen)
 
 void delChar(int op, struct rowOfText* row, int col) // this seems to work fine with tabs :D
 {
-  if (col > row->len || row >= E.numRowsofText)
+  if (col > row->len)
   {
     return;
   }
@@ -148,7 +169,7 @@ void delChar(int op, struct rowOfText* row, int col) // this seems to work fine 
       if(col == 0){ // do nothing if we're at the start of a line
         break; 
       }
-      // copy everything from the current cursor position and move it one to the left
+      // copy everything on the cursor position and everything to the right, and move it one to the left
       memmove(row->text + (col-1), row->text + (col), row->len - (col));
       memset(row->text+(row->len-1), '\0', 1); // remove trailing character that doesn't get deleted when we memmove 
       updateRow(row);
@@ -158,6 +179,9 @@ void delChar(int op, struct rowOfText* row, int col) // this seems to work fine 
   }
 }
 void insertChar(int c, struct rowOfText* row, int col){
+  if(c > 126 || c<32){
+    return;
+  }
   if(col < 0 || col > row->len){
     col = row->len;
   }
@@ -168,3 +192,9 @@ void insertChar(int c, struct rowOfText* row, int col){
   row->text[col] = c; 
   updateRow(row);
 }
+void copyText(int c){
+  E.cvBuf.copied = c; 
+  E.cvBuf.len = 1; 
+}
+
+

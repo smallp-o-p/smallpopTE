@@ -35,10 +35,22 @@ int openFile(char *filename)
             }
             addRow(line, lineLen);
         }
-        free(line);
-        fclose(fp);
+        free(line); 
+        E.fp = fp; 
         return 0;
     }
+}
+int writeToFile(char* fileName){
+    rewind(E.fp);
+    for(int i = 0; i<E.numRowsofText; i++){
+        strcat(E.textRows[i].text, "\n");
+        fwrite(E.textRows[i].text, sizeof(char), E.textRows[i].len+1, E.fp);
+    }
+    int statusMessageSize = strlen(fileName) + 32; 
+    char buf[statusMessageSize];
+    snprintf(buf, statusMessageSize, "Saved file to: %s", fileName); 
+    setStatusMessage(buf);
+    return 0; 
 }
 
 void addRow(char *str, size_t len)
@@ -76,6 +88,9 @@ void updateRow(struct rowOfText* row){
                 row->render[idx++] = ' '; 
             }
         }
+        else if(row->text[i] == '\n'){ // don't draw newlines
+            ;
+        }
         else{
             row->render[idx++] = row->text[i]; 
         }
@@ -83,6 +98,44 @@ void updateRow(struct rowOfText* row){
     row->render[idx] = '\0';
     row->renderSize = idx; 
 }
+
+void moveRowText(struct rowOfText* from, struct rowOfText* to){
+    to->text = realloc(to->text, from->len);
+    memcpy(to->text, from->text, from->len);
+    to->len = from->len; 
+    memset(from->text, '\0', from->len);
+}
+
+void addAndShiftRowsDown(int fromRow){
+  addRow("\0", E.textRows[E.numRowsofText].len); // add a new row at the bottom
+  for(int i = E.numRowsofText-1; i>fromRow; i--){ // this should leave the line after fromRow that can be overwritten
+    moveRowText(&E.textRows[i-1], &E.textRows[i]);
+    updateRow(&E.textRows[i]);
+  }  
+}
+
+void addRowAt(int row, char* whatToCopy, int len){
+    addAndShiftRowsDown(row);
+
+    struct rowOfText* newRow = &E.textRows[row];
+    struct rowOfText* previousRow = &E.textRows[row-1];
+
+    newRow->text = realloc(newRow->text, len);
+    newRow->len = len; 
+
+    memcpy(newRow->text, whatToCopy, len);
+
+    int newBlockSize = (previousRow->len - len)+1;
+    char* new = realloc(previousRow->text, newBlockSize);
+
+    previousRow->text = new;
+    previousRow->text[newBlockSize-1] = '\0';
+    previousRow->len = newBlockSize;
+
+    updateRow(newRow);
+    updateRow(previousRow);
+}
+
 int rowCx2Rx(struct rowOfText* row, int cx){
     int rx = 0;
     for(int i = 0; i< cx; i++){

@@ -14,7 +14,10 @@
 /*
     Includes that should be present everywhere
 */
-
+struct copyBuffer{ // can copy only one character at a time
+    int len;
+    char copied; 
+};
 struct rowOfText{
     int len; // length of string, length of array
     char* text; // raw text 
@@ -31,9 +34,11 @@ struct terminalConfig{
     int numRowsofText; 
     struct rowOfText* textRows; 
     struct termios terminal;
+    struct copyBuffer cvBuf; 
     char* filename; 
     char statusmsg[80];
     time_t statusmsg_time; 
+    FILE * fp; 
 } extern E; 
 
 

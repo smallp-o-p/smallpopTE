@@ -15,6 +15,7 @@ void init_editor(){
     E.filename = NULL;
     E.statusmsg[0] = '\0';
     E.statusmsg_time = 0; 
+    E.fp = NULL; 
     if(getWindowSize(&E.rows, &E.cols) == -1 ){
         die("getWindowSize");
     }
