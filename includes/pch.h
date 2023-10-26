@@ -16,9 +16,9 @@
 */
 
 struct rowOfText{
-    int len; 
+    int len; // length of string, length of array
     char* text; // raw text 
-    int renderSize;
+    int renderSize; // length of render string
     char* render; // text converted to work with our text editor
 }; 
 struct terminalConfig{

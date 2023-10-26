@@ -2,8 +2,10 @@
 #include "terminal.h"
 #include "input.h"
 #include "output.h"
+#include "file.h"
 #define START_X 0 
 #define TOP_FRAME 0 
+#define BACKSPACE_ASCII 127 
 void processKey()
 {
   int c = readKey();
@@ -13,11 +15,11 @@ void processKey()
     clearScreen();
     exit(0);
     break;
-  case DELETE:
-    delChar(c, E.cursor_y, E.cursor_x);
+  case(DELETE):
+    delChar(c, &E.textRows[E.cursor_y], E.cursor_x);
     break;
-  case (CTRL_MACRO('?')):
-    delChar(BACKSPACE, E.cursor_y, E.cursor_x);
+  case (BACKSPACE_ASCII):
+    delChar(BACKSPACE_ASCII, &E.textRows[E.cursor_y], E.cursor_x);
     break;
   case (PAGE_UP):
   case (PAGE_DOWN):
@@ -50,6 +52,7 @@ void processKey()
     moveCursor(c);
     break;
   default:
+    insertChar(c, &E.textRows[E.cursor_y], E.cursor_x);
     moveCursor(ARROW_RIGHT);
     break;
   }
@@ -127,19 +130,41 @@ void append2Buffer(struct dynamic_text_buffer *buf, char *str, int addedLen)
   }
 }
 
-void delChar(int op, int row, int col)
+void delChar(int op, struct rowOfText* row, int col) // this seems to work fine with tabs :D
 {
-  if (col > E.textRows[row].len || row >= E.numRowsofText)
+  if (col > row->len || row >= E.numRowsofText)
   {
     return;
   }
-  switch (op)
+  switch (op) // no need to call realloc since it's kind of a waste of time to reduce a block by one byte only
   {
-  case (DELETE): // delete character in front of cursor
-    memmove(E.textRows[row].text + (col - 1), E.textRows[row].text + col, E.textRows[row].len - (col - 1));
+  case (DELETE): // delete character to the right of cursor
+    // copy everything 2 positions to the right of the cursor and move it one to the left, overwriting the character we want to delete
+    memmove(row->text + (col), row->text + col+1, row->len - (col));
+    updateRow(row); // reflect it on screen
     break;
-  case (BACKSPACE):
-    memmove(E.textRows[row].text + (col - 2), E.textRows[row].text + (col - 1), E.textRows[row].len - (col - 1));
-    break;
+  case (BACKSPACE_ASCII): // delete character to the left of cursor
+    {
+      if(col == 0){ // do nothing if we're at the start of a line
+        break; 
+      }
+      // copy everything from the current cursor position and move it one to the left
+      memmove(row->text + (col-1), row->text + (col), row->len - (col));
+      memset(row->text+(row->len-1), '\0', 1); // remove trailing character that doesn't get deleted when we memmove 
+      updateRow(row);
+      moveCursor(ARROW_LEFT); // follow along :D
+      break;
+    }
   }
+}
+void insertChar(int c, struct rowOfText* row, int col){
+  if(col < 0 || col > row->len){
+    col = row->len;
+  }
+  row->text = realloc(row->text, row->len+2); 
+  // make room for the new character, works even if we're at the end
+  memmove(row->text+col+1, row->text+col, row->len - col+1); 
+  row->len++;
+  row->text[col] = c; 
+  updateRow(row);
 }
