@@ -1,6 +1,5 @@
 void removeRow(int row);
-void addRow(char* str, unsigned long len);
-void addRowAt(int row, char* whatToCopy, int len); 
+void addRow(int at, char* str, unsigned long len);
 void addAndShiftRowsDown(int fromRow);
 void updateRow(struct rowOfText* row);
 void moveRowText(struct rowOfText* from, struct rowOfText* to);

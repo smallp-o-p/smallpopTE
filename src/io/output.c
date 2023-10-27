@@ -10,6 +10,8 @@
 
 #define CURSOR_POSITION_FORMAT "\x1b[%d;%dH"
 
+#define CLEAR_LINE "\x1b[K"
+
 void refreshScreen()
 {
     scrollHandler();
@@ -119,6 +121,7 @@ void drawStatusBar(struct dynamic_text_buffer *buf)
 
 void setStatusMessage(const char *stat, ...)
 {
+    memset(E.statusmsg, '\0', sizeof(E.statusmsg));
     va_list ap;
     va_start(ap, stat);
     vsnprintf(E.statusmsg, sizeof(E.statusmsg), stat, ap);
@@ -128,13 +131,14 @@ void setStatusMessage(const char *stat, ...)
 
 void drawStatusMessage(struct dynamic_text_buffer *buf)
 {
-    append2Buffer(buf, "\x1b[k", 3);
+    append2Buffer(buf, CLEAR_LINE, 3);
     int len = strlen(E.statusmsg);
     if (len > E.cols)
     {
         len = E.cols;
     }
-    if (len && time(NULL) - E.statusmsg_time < 5)
+    time_t currentTime = time(NULL);
+    if (len && (currentTime - E.statusmsg_time < 5))
     {
         append2Buffer(buf, E.statusmsg, len);
     }

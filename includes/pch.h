@@ -10,6 +10,7 @@
 #include <signal.h>
 #include <time.h>
 #include <stdarg.h>
+#include <ctype.h>
 
 /*
     Includes that should be present everywhere

@@ -8,19 +8,18 @@
 #define START_X 0
 #define TOP_FRAME 0
 
-
 void processKey()
 {
-  static int quit = 2; 
+  static int quit = 2;
   int c = readKey();
   switch (c)
   {
-  case (CTRL_MACRO('q')):
-    if(E.dirty && quit>0)
-    {
-      setStatusMessage("File has unsaved changes. Press Ctrl+Q %d more times to quit.", quit);
-      --quit; 
+    case 0:
       return; 
+  case (CTRL_MACRO('q')):
+    if (E.dirty)
+    {
+      exitConfirm();
     }
     else
     {
@@ -31,17 +30,20 @@ void processKey()
   case (CTRL_MACRO('s')):
     writeToFile(E.filename);
     break;
+  case(CTRL_MACRO('x')):
+    writeToFile(NULL);
+    break; 
   case ('\r'): // enter;
-    addRowAt(E.cursor_y + 1, (E.textRows[E.cursor_y]).text + E.cursor_x + 1, E.textRows[E.cursor_y].len - (E.cursor_x));
+    insertNewLine();
     break;
   case CTRL_MACRO('h'):
-      break;
+    break;
   case (DELETE):
     delChar(E.cursor_x, DELETE);
     break;
   case BACKSPACE:
     delChar(E.cursor_x, BACKSPACE);
-    break;   
+    break;
   case (PAGE_UP):
   case (PAGE_DOWN):
   {
@@ -65,8 +67,8 @@ void processKey()
   }
   break;
   case CTRL_MACRO('l'):
-    case '\x1b':
-      break;
+  case '\x1b':
+    break;
   case (HOME):
   case (END):
   case (ARROW_UP):
@@ -79,7 +81,85 @@ void processKey()
     insertChar(c);
     break;
   }
-  quit = 2; 
+  quit = 2;
+}
+
+void exitConfirm()
+{
+  setStatusMessage("Save modified buffer? [y/n], cancel with [esc]");
+  refreshScreen();
+  int a;
+  do
+  {
+    a = readKey();
+    switch (a)
+    {
+    case ('y'):
+      writeToFile(E.filename);
+    case ('n'):
+      clearScreen();
+      exit(0);
+    case ('\x1b'):
+      setStatusMessage("Cancelled");
+      refreshScreen();
+      return;
+    default:
+      break; 
+    }
+  } while (1);
+}
+
+char* saveConfirm(){
+  char* fileName; 
+  size_t max_fileNameLen = 64; 
+  int fIndex = 0; 
+  fileName = malloc(max_fileNameLen * sizeof(char));
+  memset(fileName, '\0', max_fileNameLen); 
+  do{
+    setStatusMessage("Save as: %s", fileName);
+    refreshScreen();
+
+    int a = readKey();
+
+    switch(a){
+      case 0:
+        break; 
+      case('\r'):
+        {
+          if(fIndex == 0){
+            setStatusMessage("No file name provided.");
+            refreshScreen();
+          }
+          else{
+            return fileName;
+          }
+          break;
+        }
+      case('\x1b'):
+        setStatusMessage("File save cancelled.");
+        refreshScreen();
+        free(fileName);
+        return NULL;
+      case(BACKSPACE):
+        if(fIndex != 0){
+            fileName[--fIndex] = '\0';
+        }
+      default: 
+        {
+          if(!iscntrl(a) && a < 127){
+            if(fIndex == max_fileNameLen){
+              setStatusMessage("File name can be at most 64 characters.");
+              refreshScreen;
+              break; 
+            }
+            else{
+              fileName[fIndex++] = a;
+              fileName[fIndex] = '\0';
+            }
+          }
+        }
+    }
+  }while(1);
 }
 
 void moveCursor(int direction)
@@ -153,6 +233,25 @@ void append2Buffer(struct dynamic_text_buffer *buf, char *str, int addedLen)
     buf->buf = new;
     buf->len += addedLen;
   }
+}
+
+void insertNewLine()
+{
+  if (E.cursor_x == 0)
+  {
+    addRow(E.cursor_y, "", 0);
+  }
+  else
+  {
+    struct rowOfText *row = E.textRows + E.cursor_y;
+    addRow(E.cursor_y + 1, row->text + E.cursor_x, row->len - E.cursor_x);
+    row = E.textRows + E.cursor_y; // reset the pointer in case realloc moves the block somewhere
+    row->len = E.cursor_x;
+    row->text[row->len] = '\0';
+    updateRow(row);
+  }
+  E.cursor_y++;
+  E.cursor_x = 0;
 }
 
 void copyText(int c)

@@ -7,13 +7,14 @@ struct terminalConfig E;
 
 void init_terminal()
 {
-
     if (tcgetattr(STDIN_FILENO, &E.terminal) == -1)
     {
         die("tcgetattr");
     };
     struct termios raw = E.terminal;
     cfmakeraw(&raw);
+    raw.c_cc[VMIN] = 0;
+    raw.c_cc[VTIME] = 1; 
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
     {
         die("tcsetattr");
@@ -120,7 +121,7 @@ int getWindowSize(int *rows, int *cols)
 int readKey()
 {
     int nread;
-    char c;
+    char c = '\0'; // you have to set it or else it will hold some garbage value
     if ((nread = read(STDIN_FILENO, &c, 1)) != 1)
     {
         if (nread == -1 && nread != EAGAIN)

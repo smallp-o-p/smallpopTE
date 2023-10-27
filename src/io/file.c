@@ -30,35 +30,40 @@ int openFile(char *filename)
             {
                 lineLen--;
             }
-            addRow(line, lineLen);
+            addRow(E.numRowsofText, line, lineLen);
         }
         free(line);
-        E.fp = fp;
+        fclose(fp);
         E.dirty = 0;
         return 0;
     }
 }
 int writeToFile(char *fileName)
 {
+    FILE* fp; 
     if(fileName == NULL){
+        fileName = saveConfirm();
+        if(fileName == NULL){
+            return -1; 
+        } 
+        fp = fopen(fileName, "w+");
+    }
+    else{
+        fp = fopen(fileName, "r+");
+    }
+    if(!fp){
         return -1; 
     }
-    if(E.fp == NULL){
-        E.fp = fopen(fileName, "w"); 
-        if(!E.fp){
-            die("fopen");
-        }
-    }
-    rewind(E.fp);
     for (int i = 0; i < E.numRowsofText; i++)
     {
         struct rowOfText row = E.textRows[i];
         if(i == E.numRowsofText-1){
-            fwrite(row.text, sizeof(char), row.len, E.fp);
+            fwrite(row.text, sizeof(char), row.len, fp);
             break;
         }
-        fwrite(strcat(row.text, "\n"), sizeof(char), row.len+1, E.fp);
+        fwrite(strcat(row.text, "\n"), sizeof(char), row.len+1, fp);
     }
+    fclose(fp);
     E.dirty = 0;
     int statusMessageSize = strlen(fileName) + 32;
     char buf[statusMessageSize];
