@@ -16,7 +16,7 @@ int openFile(char *filename)
     E.filename = strdup(filename);
     if (filename != NULL)
     {
-        FILE *fp = fopen(filename, "r+w");
+        FILE *fp = fopen(filename, "r");
         if (!fp)
         {
             die("fopen");
@@ -38,13 +38,14 @@ int openFile(char *filename)
         return 0;
     }
 }
+
 int writeToFile(char *fileName)
 {
     FILE* fp; 
     if(fileName == NULL){
-        fileName = saveConfirm();
+        fileName = makePrompt("Save as: %s");
         if(fileName == NULL){
-            return -1; 
+            return 0; 
         } 
         fp = fopen(fileName, "w+");
     }
@@ -52,23 +53,36 @@ int writeToFile(char *fileName)
         fp = fopen(fileName, "r+");
     }
     if(!fp){
+        setStatusMessage("Failed to open file %s, error returned: %s", fileName, strerror(errno));
         return -1; 
     }
-    for (int i = 0; i < E.numRowsofText; i++)
-    {
-        struct rowOfText row = E.textRows[i];
-        if(i == E.numRowsofText-1){
-            fwrite(row.text, sizeof(char), row.len, fp);
-            break;
-        }
-        fwrite(strcat(row.text, "\n"), sizeof(char), row.len+1, fp);
-    }
-    fclose(fp);
+
+    char* toWrite = rowsToCharBuffer(E.textRows, E.numRowsofText);
+    fwrite(toWrite, sizeof(char), strlen(toWrite), fp);
+
+    fclose(fp); 
+    
     E.dirty = 0;
-    int statusMessageSize = strlen(fileName) + 32;
-    char buf[statusMessageSize];
-    snprintf(buf, statusMessageSize, "Saved file to: %s", fileName);
-    setStatusMessage(buf);
+    E.filename = fileName;
+    setStatusMessage("Saved to file %s", fileName);
+    free(toWrite);
+
     return 0;
 }
 
+char* rowsToCharBuffer(struct rowOfText* rows, int numRows){
+    int lenTracker = 0; 
+    for(int i =0; i<numRows; i++){
+        lenTracker += (rows+i)->len + 1; 
+    }
+    char* buffer = malloc(lenTracker * sizeof(char));
+    char* ptr = buffer; 
+
+    for(int i = 0; i<numRows; i++){
+        memcpy(ptr, (rows+i)->text, (rows+i)->len);
+        ptr += (rows+i)->len;
+        *(ptr) = '\n';
+        ptr++;
+    }
+    return buffer; 
+}

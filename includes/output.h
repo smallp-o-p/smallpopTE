@@ -1,8 +1,11 @@
 struct dynamic_text_buffer; 
+typedef struct dynamic_text_buffer displayBuffer;
 void refreshScreen();
-void drawRows(char c, struct dynamic_text_buffer* buf); 
+void drawRows(char c, displayBuffer* buf); 
 void clearScreen(); 
 void scrollHandler();
-void drawStatusBar(struct dynamic_text_buffer* buf);
+void drawStatusBar(displayBuffer* buf);
 void setStatusMessage(const char* stat, ...);
-void drawStatusMessage(struct dynamic_text_buffer* buf);
+void drawStatusMessage(displayBuffer* buf);
+void drawHelpScreen(displayBuffer* buf);
+void drawTitleBar(displayBuffer* buf);

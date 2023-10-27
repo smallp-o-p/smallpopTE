@@ -13,4 +13,4 @@ void append2Buffer(struct dynamic_text_buffer* buf, char* str, int addedLen);
 void insertNewLine();
 void copyText(int c);
 void exitConfirm();
-char* saveConfirm(); 
+char* makePrompt(char* prompt);

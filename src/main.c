@@ -16,12 +16,11 @@ void init_editor()
     E.filename = NULL;
     E.statusmsg[0] = '\0';
     E.statusmsg_time = 0;
-    E.fp = NULL;
     if (getWindowSize(&E.rows, &E.cols) == -1)
     {
         die("getWindowSize");
     }
-    E.rows -= 2; // leave two rows at the bottom empty for status bar and message
+    E.rows -= 2; // leave two rows empty at the bottom for status bar and message
 }
 
 static void sig_handler(int sig)
@@ -52,11 +51,14 @@ int main(int argc, char **argv)
     atexit(cleanup);
     init_terminal();
     init_editor();
+
     if (argc >= 2)
     {
         openFile(argv[1]);
     }
-    setStatusMessage("Ctrl-Q to Quit!");
+
+    setStatusMessage("Ctrl-H for Help!");
+
     while (1)
     {
         signal(SIGWINCH, sig_handler);
