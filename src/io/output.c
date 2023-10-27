@@ -6,7 +6,7 @@
 #include "output.h"
 #include "terminal.h"
 #include "input.h"
-#include "file.h"
+#include "row.h"
 
 #define CURSOR_POSITION_FORMAT "\x1b[%d;%dH"
 
@@ -90,8 +90,8 @@ void drawStatusBar(struct dynamic_text_buffer *buf)
     append2Buffer(buf, "\x1b[1;7m", 6);
     char statusText[80], rstatus[80];
     int len = snprintf(statusText, sizeof(statusText),
-                       "%.20s - %d lines",
-                       E.filename ? E.filename : "[Blank File]", E.numRowsofText);
+                       "%.20s - %d lines %s",
+                       E.filename ? E.filename : "[Blank File]", E.numRowsofText, E.dirty ? "(modified)" : "");
     if (len > E.cols)
     {
         len = E.cols;

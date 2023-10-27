@@ -30,6 +30,7 @@ struct terminalConfig{
     int rows;
     int rowOffset;
     int cols; 
+    int dirty; 
     int colOffset; 
     int numRowsofText; 
     struct rowOfText* textRows; 
@@ -40,6 +41,20 @@ struct terminalConfig{
     time_t statusmsg_time; 
     FILE * fp; 
 } extern E; 
+
+/* Should only be keys that start with an escape (1b or 27)*/
+enum specialKeys{
+    BACKSPACE = 127,
+    ARROW_LEFT = 300,
+    ARROW_RIGHT, 
+    ARROW_UP,
+    ARROW_DOWN, 
+    HOME,
+    END,
+    PAGE_UP,
+    PAGE_DOWN,
+    DELETE, 
+};
 
 
 

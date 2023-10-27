@@ -26,9 +26,19 @@ void init_editor()
 
 static void sig_handler(int sig)
 {
-    if (getWindowSize(&E.rows, &E.cols) == -1)
+    switch(sig)
     {
-        die("getWindowSize");
+        case SIGSEGV:
+            cleanup();
+            exit(-1);
+            break; 
+        case SIGWINCH:
+        {
+            if (getWindowSize(&E.rows, &E.cols) == -1)
+            {
+                die("getWindowSize");
+            }
+        }
     }
 }
 
@@ -50,6 +60,7 @@ int main(int argc, char **argv)
     while (1)
     {
         signal(SIGWINCH, sig_handler);
+        signal(SIGSEGV, sig_handler);
         refreshScreen();
         processKey();
     }
