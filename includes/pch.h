@@ -40,6 +40,7 @@ struct terminalConfig{
     char* filename; 
     char statusmsg[80];
     time_t statusmsg_time; 
+    FILE * fp; 
 } extern E; 
 
 /* Should only be keys that start with an escape (1b or 27)*/

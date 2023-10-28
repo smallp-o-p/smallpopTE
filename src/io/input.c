@@ -8,16 +8,14 @@
 #define START_X 0
 #define TOP_FRAME 0
 
-#define CY E.cursor_y
-
 void processKey()
 {
   static int quit = 2;
   int c = readKey();
   switch (c)
   {
-  case 0:
-    return;
+    case 0:
+      return; 
   case (CTRL_MACRO('q')):
     if (E.dirty)
     {
@@ -32,9 +30,9 @@ void processKey()
   case (CTRL_MACRO('s')):
     writeToFile(E.filename);
     break;
-  case (CTRL_MACRO('x')):
+  case(CTRL_MACRO('x')):
     writeToFile(NULL);
-    break;
+    break; 
   case ('\r'): // enter;
     insertNewLine();
     break;
@@ -51,14 +49,14 @@ void processKey()
   {
     if (c == PAGE_UP)
     {
-      CY = E.rowOffset;
+      E.cursor_y = E.rowOffset;
     }
     else if (c == PAGE_DOWN)
     {
-      CY = E.rowOffset + E.rows - 1;
-      if (CY > E.numRowsofText)
+      E.cursor_y = E.rowOffset + E.rows - 1;
+      if (E.cursor_y > E.numRowsofText)
       {
-        CY = E.numRowsofText;
+        E.cursor_y = E.numRowsofText;
       }
     }
     int times = E.rows;
@@ -106,71 +104,67 @@ void exitConfirm()
       refreshScreen();
       return;
     default:
-      break;
+      break; 
     }
   } while (1);
 }
 
-char *makePrompt(char *prompt)
-{
-  int bufferSize = 128;
-  char *userBuffer = malloc(bufferSize * sizeof(char));
-  int userBuffLen = 0;
-
-  memset(userBuffer, '\0', bufferSize);
-  do
-  {
-    int a = readKey();
-    setStatusMessage(prompt, userBuffer);
+char* saveConfirm(){
+  char* fileName; 
+  size_t max_fileNameLen = 64; 
+  int fIndex = 0; 
+  fileName = malloc(max_fileNameLen * sizeof(char));
+  memset(fileName, '\0', max_fileNameLen); 
+  do{
+    setStatusMessage("Save as: %s", fileName);
     refreshScreen();
 
-    switch (a)
-    {
-    case 0:
-      break;
-    case ('\r'):
-    {
-      if (userBuffLen == 0)
-      {
-        setStatusMessage("No input provided. Retrying.");
-        refreshScreen();
-      }
-      else
-      {
-        return userBuffer;
-      }
-      break;
-    }
-    case ('\x1b'):
-      setStatusMessage("Action cancelled.");
-      refreshScreen();
-      free(userBuffer);
-      return NULL;
-    case (BACKSPACE):
-      if (userBuffLen != 0)
-      {
-        userBuffer[--userBuffLen] = '\0';
-      }
-      break; 
-    default:
-    {
-      if (!iscntrl(a) && a < 127)
-      {
-        if (userBuffLen == bufferSize)
+    int a = readKey();
+
+    switch(a){
+      case 0:
+        break; 
+      case('\r'):
         {
-          userBuffer = realloc(userBuffer, (bufferSize*2));
+          if(fIndex == 0){
+            setStatusMessage("No file name provided.");
+            refreshScreen();
+          }
+          else{
+            return fileName;
+          }
+          break;
         }
-        userBuffer[userBuffLen++] = a;
-        userBuffer[userBuffLen] = '\0';
-      }
+      case('\x1b'):
+        setStatusMessage("File save cancelled.");
+        refreshScreen();
+        free(fileName);
+        return NULL;
+      case(BACKSPACE):
+        if(fIndex != 0){
+            fileName[--fIndex] = '\0';
+        }
+      default: 
+        {
+          if(!iscntrl(a) && a < 127){
+            if(fIndex == max_fileNameLen){
+              setStatusMessage("File name can be at most 64 characters.");
+              refreshScreen;
+              break; 
+            }
+            else{
+              fileName[fIndex++] = a;
+              fileName[fIndex] = '\0';
+            }
+          }
+        }
     }
-    }
-  } while (1);
+  }while(1);
 }
 
 void moveCursor(int direction)
 {
-  struct rowOfText *currentRow = (CY >= E.numRowsofText) ? NULL : &E.textRows[CY];
+  struct rowOfText *currentRow = (E.cursor_y >= E.numRowsofText) ? NULL : &E.textRows[E.cursor_y];
   switch (direction)
   {
   case ARROW_LEFT:
@@ -178,10 +172,10 @@ void moveCursor(int direction)
     {
       E.cursor_x--;
     }
-    else if (CY > TOP_FRAME)
+    else if (E.cursor_y > TOP_FRAME)
     {
-      CY--;
-      E.cursor_x = E.textRows[CY].len;
+      E.cursor_y--;
+      E.cursor_x = E.textRows[E.cursor_y].len;
     }
     break;
   case ARROW_RIGHT:
@@ -191,34 +185,34 @@ void moveCursor(int direction)
     }
     else if (currentRow && E.cursor_x == currentRow->len)
     { //
-      CY++;
+      E.cursor_y++;
       E.cursor_x = START_X;
     }
     break;
   case ARROW_UP:
-    if (CY != TOP_FRAME)
+    if (E.cursor_y != TOP_FRAME)
     {
-      CY--;
+      E.cursor_y--;
     }
     break;
   case ARROW_DOWN:
-    if (CY < E.numRowsofText)
+    if (E.cursor_y < E.numRowsofText)
     {
-      CY++;
+      E.cursor_y++;
     }
     break;
   case HOME:
     E.cursor_x = START_X;
     break;
   case END:
-    if (CY < E.numRowsofText)
+    if (E.cursor_y < E.numRowsofText)
     {
-      E.cursor_x = E.textRows[CY].len;
+      E.cursor_x = E.textRows[E.cursor_y].len;
     }
     break;
   }
   // if above line is longer than below, snap the cursor to the last letter of the below line
-  currentRow = (CY >= E.numRowsofText) ? NULL : &E.textRows[CY];
+  currentRow = (E.cursor_y >= E.numRowsofText) ? NULL : &E.textRows[E.cursor_y];
   int rowLen = currentRow ? currentRow->len : 0;
   if (E.cursor_x > rowLen)
   {
@@ -245,18 +239,18 @@ void insertNewLine()
 {
   if (E.cursor_x == 0)
   {
-    addRow(CY, "", 0);
+    addRow(E.cursor_y, "", 0);
   }
   else
   {
-    struct rowOfText *row = E.textRows + CY;
-    addRow(CY + 1, row->text + E.cursor_x, row->len - E.cursor_x);
-    row = E.textRows + CY; // reset the pointer in case realloc moves the block somewhere
+    struct rowOfText *row = E.textRows + E.cursor_y;
+    addRow(E.cursor_y + 1, row->text + E.cursor_x, row->len - E.cursor_x);
+    row = E.textRows + E.cursor_y; // reset the pointer in case realloc moves the block somewhere
     row->len = E.cursor_x;
     row->text[row->len] = '\0';
     updateRow(row);
   }
-  CY++;
+  E.cursor_y++;
   E.cursor_x = 0;
 }
 

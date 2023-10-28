@@ -5,7 +5,6 @@
 #define TABSTOP 8
 #define SPACE 32
 #define BACKSPACE_ASCII 127
-#define CURSOR_Y_ROW E.cursor_y
 
 void addRow(int at, char *str, size_t len)
 {
@@ -111,7 +110,7 @@ void insertChar(int c)
     {
         addRow(E.numRowsofText, "", 0);
     }
-    insertCharInRow(c, &E.textRows[CURSOR_Y_ROW], E.cursor_x);
+    insertCharInRow(c, &E.textRows[E.cursor_y], E.cursor_x);
     E.cursor_x++;
 }
 
@@ -132,10 +131,10 @@ void insertCharInRow(int c, struct rowOfText *row, int col)
 
 void delChar(int col, int op)
 {
-    if((CURSOR_Y_ROW == E.numRowsofText && op == BACKSPACE) || (E.cursor_x == 0 && E.cursor_y == 1)){
+    if((E.cursor_y == E.numRowsofText && op == BACKSPACE) || (E.cursor_x == 0 && E.cursor_y == 0)){
         return; 
     }
-    struct rowOfText *tRow = &E.textRows[CURSOR_Y_ROW];
+    struct rowOfText *tRow = &E.textRows[E.cursor_y];
     delCharInRow(op, tRow, col);
 }
 
@@ -162,7 +161,7 @@ void delCharInRow(int op, struct rowOfText *row, int col) // this seems to work 
     case (BACKSPACE): // delete character to the left of cursor
         if (col == 0)
         {
-            E.cursor_x = E.textRows[CURSOR_Y_ROW-1].len;
+            E.cursor_x = E.textRows[E.cursor_y-1].len;
             appendRowText(row-1, row->text, row->len);
             removeRow(E.cursor_y);
             E.cursor_y--;

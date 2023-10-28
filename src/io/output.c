@@ -15,7 +15,7 @@
 void refreshScreen()
 {
     scrollHandler();
-    displayBuffer dbuf = {NULL, 0};
+    struct dynamic_text_buffer dbuf = {NULL, 0};
 
     append2Buffer(&dbuf, "\x1b[?25l", 6);
     append2Buffer(&dbuf, "\x1b[H", 3);
@@ -23,7 +23,7 @@ void refreshScreen()
     drawStatusBar(&dbuf);
     drawStatusMessage(&dbuf);
 
-    char buf[32]; // (y,x)
+    char buf[32]; // cursor position why is it (y, x) ????
     snprintf(buf, sizeof(buf), CURSOR_POSITION_FORMAT, (E.cursor_y - E.rowOffset) + 1, (E.render_x - E.colOffset) + 1);
 
     append2Buffer(&dbuf, buf, strlen(buf)); // write cursor position to the output buffer
@@ -39,7 +39,7 @@ void clearScreen()
     write(STDOUT_FILENO, "\x1b[H", 3);
 }
 
-void drawRows(char c, displayBuffer* buf)
+void drawRows(char c, struct dynamic_text_buffer *buf)
 {
     for (int y = 0; y < E.rows; y++)
     {
@@ -87,19 +87,7 @@ void scrollHandler()
     }
 }
 
-void drawTitleBar(displayBuffer* buf){
-    append2Buffer(buf, "\x1b[1;7m", 6);
-    char* title = "popNano 0.0.1";
-    int len = 14;
-    append2Buffer(buf, title, 14);
-    for(int i = 14; i< E.cols; i++){
-        append2Buffer(buf, " ", 1);
-    }
-    append2Buffer(buf, "\x1b[m", 3);
-    append2Buffer(buf, "\r\n", 2);
-}
-
-void drawStatusBar(displayBuffer* buf)
+void drawStatusBar(struct dynamic_text_buffer *buf)
 {
     append2Buffer(buf, "\x1b[1;7m", 6);
     char statusText[80], rstatus[80];
@@ -141,7 +129,7 @@ void setStatusMessage(const char *stat, ...)
     E.statusmsg_time = time(NULL);
 }
 
-void drawStatusMessage(displayBuffer* buf)
+void drawStatusMessage(struct dynamic_text_buffer *buf)
 {
     append2Buffer(buf, CLEAR_LINE, 3);
     int len = strlen(E.statusmsg);
