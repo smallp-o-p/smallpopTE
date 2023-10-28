@@ -27,7 +27,6 @@ void cleanup()
     {
         die("tcsetattr");
     }
-    fclose(E.fp);
 }
 
 int handleEsc(char c)

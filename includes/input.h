@@ -14,3 +14,5 @@ void insertNewLine();
 void copyText(int c);
 void exitConfirm();
 char* saveConfirm(); 
+char* makePrompt(char* promptFormat);
+

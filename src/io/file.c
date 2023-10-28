@@ -40,11 +40,11 @@ int openFile(char *filename)
 }
 int writeToFile(char *fileName)
 {
-    FILE* fp; 
+    FILE* fp = NULL; 
     if(fileName == NULL){
-        fileName = saveConfirm();
+        fileName = makePrompt("Save as: %s");
         if(fileName == NULL){
-            return -1; 
+            return 0;
         } 
         fp = fopen(fileName, "w+");
     }
@@ -54,21 +54,39 @@ int writeToFile(char *fileName)
     if(!fp){
         return -1; 
     }
-    for (int i = 0; i < E.numRowsofText; i++)
-    {
-        struct rowOfText row = E.textRows[i];
-        if(i == E.numRowsofText-1){
-            fwrite(row.text, sizeof(char), row.len, fp);
-            break;
-        }
-        fwrite(strcat(row.text, "\n"), sizeof(char), row.len+1, fp);
-    }
+
+    int length; 
+    char* toWrite = rowsToCharBuffer(&length, E.textRows, E.numRowsofText);
+
+    ftruncate(fileno(fp), length);
+    fwrite(toWrite, sizeof(char), length, fp);
     fclose(fp);
+
     E.dirty = 0;
-    int statusMessageSize = strlen(fileName) + 32;
-    char buf[statusMessageSize];
-    snprintf(buf, statusMessageSize, "Saved file to: %s", fileName);
-    setStatusMessage(buf);
+    setStatusMessage("Saved file to: %s", fileName);
+    E.filename = fileName; 
+    free(toWrite);
     return 0;
 }
 
+
+char* rowsToCharBuffer(int* len, tRow* rows, int numRows){
+
+    int totalLen = 0;
+    for(int i = 0; i<numRows; i++){
+        totalLen += (rows+i)->len+1;
+    }
+
+    *len = totalLen;
+    char* buffer = malloc(totalLen); 
+    char* ptr = buffer; 
+
+    memset(buffer, '\0', sizeof(totalLen));
+
+    for(int j = 0; j< numRows; j++){
+        memcpy(ptr, (rows+j)->text, (rows+j)->len);
+        ptr+= (rows+j)->len;
+        (*ptr++) = '\n';
+    }
+    return buffer; 
+}

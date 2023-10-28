@@ -25,6 +25,7 @@ struct rowOfText{
     int renderSize; // length of render string
     char* render; // text converted to work with our text editor
 }; 
+typedef struct rowOfText tRow; 
 struct terminalConfig{
     int cursor_x, cursor_y; 
     int render_x; 
@@ -40,8 +41,11 @@ struct terminalConfig{
     char* filename; 
     char statusmsg[80];
     time_t statusmsg_time; 
-    FILE * fp; 
 } extern E; 
+
+#define c_y E.cursor_y
+
+#define c_x E.cursor_x
 
 /* Should only be keys that start with an escape (1b or 27)*/
 enum specialKeys{
