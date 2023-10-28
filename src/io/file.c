@@ -43,7 +43,7 @@ int writeToFile(char *fileName)
 {
     FILE* fp = NULL; 
     if(fileName == NULL){
-        fileName = makePrompt("Save as: %s");
+        fileName = makePrompt("Save as ([esc] to cancel): %s");
         if(fileName == NULL){
             return 0;
         } 
@@ -53,7 +53,7 @@ int writeToFile(char *fileName)
         fp = fopen(fileName, "r+");
     }
     if(!fp){
-        setStatusMessage("Failed to open file %s, error returned: %s", fileName, strerror(errno));
+        setStatusMessage(BAD, "Failed to open file %s, error returned: %s", fileName, strerror(errno));
         return -1; 
     }
 
@@ -63,9 +63,8 @@ int writeToFile(char *fileName)
     ftruncate(fileno(fp), length);
     fwrite(toWrite, sizeof(char), length, fp);
     fclose(fp);
-
+    setStatusMessage(GOOD, "Wrote %d %s to: %s", E.dirty == 0 ? E.numRowsofText : E.dirty, E.dirty == 0 ? "lines" : "bytes",fileName);
     E.dirty = 0;
-    setStatusMessage("Saved file to: %s", fileName);
     E.filename = fileName; 
     free(toWrite);
     return 0;

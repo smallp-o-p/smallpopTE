@@ -7,7 +7,7 @@
 
 void init_editor()
 {
-    E.cursor_x = 1;
+    E.cursor_x = 0;
     E.cursor_y = 0;
     E.render_x = 0;
     E.numRowsofText = 0;
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     {
         openFile(argv[1]);
     }
-    setStatusMessage("Ctrl-Q to Quit!");
+    setStatusMessage(NORMAL, "Ctrl-Q to Quit!");
     while (1)
     {
         signal(SIGWINCH, sig_handler);

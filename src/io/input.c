@@ -86,7 +86,7 @@ void processKey()
 
 void exitConfirm()
 {
-  setStatusMessage("Save modified buffer? [y/n], cancel with [esc]");
+  setStatusMessage(NORMAL, "Save modified buffer? [y/n], cancel with [esc]");
   refreshScreen();
   int a;
   do
@@ -100,7 +100,7 @@ void exitConfirm()
       clearScreen();
       exit(0);
     case ('\x1b'):
-      setStatusMessage("Cancelled");
+      setStatusMessage(NORMAL, "Cancelled");
       refreshScreen();
       return;
     default:
@@ -119,48 +119,43 @@ char *makePrompt(char *promptFormat)
   do
   {
     int a = readKey();
-    setStatusMessage(promptFormat, userBuffer);
+    setStatusMessage(NORMAL, promptFormat, userBuffer);
     refreshScreen();
 
-    switch(a){
-      case 0:
-        break; 
-      case('\r'):
-        {
-          if(userBuffLen == 0){
-            setStatusMessage("No file name provided.");
-            refreshScreen();
-          }
-          else{
-            return userBuffer;
-          }
-          break;
-        }
-      case('\x1b'):
-        setStatusMessage("File save cancelled.");
-        refreshScreen();
-        free(userBuffer);
-        return NULL;
-      case(BACKSPACE):
-        if(userBuffLen != 0){
-            userBuffer[--userBuffLen] = '\0';
-        }
-      default: 
-        {
-          if(!iscntrl(a) && a < 127){
-            if(userBuffLen == bufferSize){
-              setStatusMessage("File name can be at most 64 characters.");
-              refreshScreen;
-              break; 
-            }
-            else{
-              userBuffer[userBuffLen++] = a;
-              userBuffer[userBuffLen] = '\0';
-            }
-          }
-        }
+    switch (a)
+    {
+    case 0:
+      break;
+    case ('\r'):
+    {
+      if (userBuffLen != 0)
+      {
+        return userBuffer;
+      }
+      break;
     }
-  }while(1);
+    case ('\x1b'):
+      setStatusMessage(NORMAL, "Action cancelled.");
+      refreshScreen();
+      free(userBuffer);
+      return NULL;
+    case (BACKSPACE):
+      if (userBuffLen != 0)
+      {
+        userBuffer[--userBuffLen] = '\0';
+      }
+    default:
+      if (!iscntrl(a) && a < 127)
+      {
+        if (userBuffLen == bufferSize)
+        {
+          userBuffer = realloc(userBuffer, (bufferSize *= 2));
+        }
+        userBuffer[userBuffLen++] = a;
+        userBuffer[userBuffLen] = '\0';
+      }
+    }
+  } while (1);
 }
 
 void moveCursor(int direction)

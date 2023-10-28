@@ -12,6 +12,8 @@
 
 #define CLEAR_LINE "\x1b[K"
 
+
+
 void refreshScreen()
 {
     scrollHandler();
@@ -119,12 +121,31 @@ void drawStatusBar(struct dynamic_text_buffer *buf)
     append2Buffer(buf, "\r\n", 2);
 }
 
-void setStatusMessage(const char *stat, ...)
+void setStatusMessage(int type, const char *stat,  ...)
 {
     memset(E.statusmsg, '\0', sizeof(E.statusmsg));
+    char temp[80]; 
+    char* color = ""; 
+    switch(type){
+        case BAD: 
+            color = "\033[91m";
+        case CONCERNING:
+            color = "\033[33m";
+            break;
+        case GOOD: 
+            color = "\033[92m";
+            break; 
+        default:
+            break; 
+    }
+    strncpy(temp, color, sizeof(temp)-1);
+    strcat(temp, stat);
+    if(type != NORMAL){
+        strcat(temp, "\033[0m");
+    }
     va_list ap;
     va_start(ap, stat);
-    vsnprintf(E.statusmsg, sizeof(E.statusmsg), stat, ap);
+    vsnprintf(E.statusmsg, sizeof(E.statusmsg), temp, ap);
     va_end(ap);
     E.statusmsg_time = time(NULL);
 }
