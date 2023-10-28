@@ -16,7 +16,7 @@ int openFile(char *filename)
     E.filename = strdup(filename);
     if (filename != NULL)
     {
-        FILE *fp = fopen(filename, "r+w");
+        FILE *fp = fopen(filename, "r");
         if (!fp)
         {
             die("fopen");
@@ -38,6 +38,7 @@ int openFile(char *filename)
         return 0;
     }
 }
+
 int writeToFile(char *fileName)
 {
     FILE* fp = NULL; 
@@ -52,6 +53,7 @@ int writeToFile(char *fileName)
         fp = fopen(fileName, "r+");
     }
     if(!fp){
+        setStatusMessage("Failed to open file %s, error returned: %s", fileName, strerror(errno));
         return -1; 
     }
 
