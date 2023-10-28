@@ -84,61 +84,6 @@ void processKey()
   quit = 2;
 }
 
-char *makePrompt(char *promptFormat)
-{
-  size_t bufferSize = 64;
-  size_t bufferStrLen = 0;
-  char *buffer = malloc(bufferSize * sizeof(char));
-
-  memset(buffer, '\0', bufferSize);
-  do
-  {
-    setStatusMessage(promptFormat, buffer);
-    refreshScreen();
-
-    int a = readKey();
-
-    switch (a)
-    {
-    case 0:
-      break;
-    case '\r':
-      if (bufferSize == 0)
-      {
-        setStatusMessage("Empty input. Trying again.");
-        refreshScreen();
-        break;
-      }
-      else
-      {
-        return buffer;
-      }
-    case ('\x1b'):
-      setStatusMessage("Action cancelled.");
-      free(buffer);
-      return NULL;
-      break;
-    case (BACKSPACE):
-      if (bufferStrLen != 0)
-      {
-        buffer[--bufferStrLen] = '\0';
-      }
-      break;
-    default:
-      if (iscntrl(a) && a < 128)
-      {
-        if (bufferSize == bufferStrLen)
-        {
-          buffer = realloc(buffer, (bufferSize *= 2));
-        }
-        buffer[bufferStrLen++] = a;
-        buffer[bufferStrLen] = '\0';
-        break;
-      }
-    }
-  } while (1);
-}
-
 void exitConfirm()
 {
   setStatusMessage("Save modified buffer? [y/n], cancel with [esc]");
