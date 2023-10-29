@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "input.h"
 #include "row.h"
+#include "output.h"
 
 #define TABSTOP 8
 #define SPACE 32
@@ -179,4 +180,35 @@ void delCharInRow(int op, struct rowOfText *row, int col) // this seems to work 
 
     }
     E.dirty++;
+}
+
+foundPair* searchSubstr(char* needle, int* countToUpdate){
+    setStatusMessage(NORMAL, "Searching for: %s...", needle);
+    refreshScreen();
+    
+    int foundPairLen = 5; 
+    foundPair* pairs = malloc(sizeof(foundPair) * foundPairLen); 
+    int needleLen = strlen(needle);
+    int count = 0; 
+
+    for(int i = 0; i<E.numRowsofText; i++){
+        char* haystack = E.textRows[i].text; 
+        char* temp = haystack; 
+        while((temp = strstr(temp, needle)) != NULL){
+            foundPair found = {i, (int) (temp-haystack)};
+            if(count == foundPairLen){
+                pairs = realloc(pairs, sizeof(foundPair) * (foundPairLen *= 2));
+            }
+            pairs[count++] = found;   
+            temp+= needleLen; 
+        }
+    }
+    if(count == 0){
+        *countToUpdate = 0;
+        return NULL; 
+    }
+    else{
+        *countToUpdate = count; 
+        return pairs; 
+    }
 }

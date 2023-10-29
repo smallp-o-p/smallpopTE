@@ -4,6 +4,7 @@
 #include "output.h"
 #include "file.h"
 #include "row.h"
+#include "editorFeatures.h"
 
 #define START_X 0
 #define TOP_FRAME 0
@@ -38,6 +39,9 @@ void processKey()
     break;
   case CTRL_MACRO('h'):
     break;
+  case CTRL_MACRO('f'):
+    findString();
+    break; 
   case (DELETE):
     delChar(c_x, DELETE);
     break;
@@ -78,7 +82,9 @@ void processKey()
     moveCursor(c);
     break;
   default:
-    insertChar(c);
+    if(!iscntrl(c)){
+      insertChar(c);
+    } 
     break;
   }
   quit = 2;
@@ -135,7 +141,7 @@ char *makePrompt(char *promptFormat)
       break;
     }
     case ('\x1b'):
-      setStatusMessage(NORMAL, "Action cancelled.");
+      setStatusMessage(CONCERNING, "Action cancelled.");
       refreshScreen();
       free(userBuffer);
       return NULL;
