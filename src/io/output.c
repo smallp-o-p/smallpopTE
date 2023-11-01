@@ -53,10 +53,14 @@ void drawRows(char c, struct dynamic_text_buffer *buf)
         else
         {
             int len = E.textRows[filerow].renderSize - E.colOffset;
+            
+
             if (len < 0)
                 len = 0;
             if (len > E.cols)
                 len = E.cols;
+            char* c = &E.textRows[filerow].render[E.colOffset];
+            
             append2Buffer(buf, &E.textRows[filerow].render[E.colOffset], len);
         }
         append2Buffer(buf, "\x1b[K", 3);

@@ -39,6 +39,9 @@ void processKey()
     break;
   case CTRL_MACRO('h'):
     break;
+  case CTRL_MACRO('w'): // this works in the vscode terminal but not on the mint terminal since ctrl+backspace is ^W over there 
+    backspaceWord(c_x, &E.textRows[c_y]);
+    break;
   case CTRL_MACRO('f'):
     findString();
     break; 

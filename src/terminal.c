@@ -26,7 +26,7 @@ void cleanup()
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.terminal) == -1)
     {
         die("tcsetattr");
-    }
+    } 
 }
 
 int handleEsc(char c)
@@ -98,6 +98,9 @@ int handleEsc(char c)
         case 'F':
             return END;
         }
+    }
+    else if(seq[0] == 'd'){
+        return CTRL_DELETE; 
     }
     return '\x1b';
 }

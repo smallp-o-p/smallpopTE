@@ -24,6 +24,7 @@ struct rowOfText{
     char* text; // raw text 
     int renderSize; // length of render string
     char* render; // text converted to work with our text editor
+    char* highLighting; 
 }; 
 typedef struct rowOfText tRow; 
 struct terminalConfig{
@@ -49,7 +50,7 @@ struct terminalConfig{
 
 /* Should only be keys that start with an escape (1b or 27)*/
 enum specialKeys{
-    BACKSPACE = 127,
+    BACKSPACE = 127, 
     ARROW_LEFT = 300,
     ARROW_RIGHT, 
     ARROW_UP,
@@ -59,6 +60,7 @@ enum specialKeys{
     PAGE_UP,
     PAGE_DOWN,
     DELETE, 
+    CTRL_DELETE
 };
 
 
