@@ -17,7 +17,7 @@ void findString()
         return;
     }
     int count = 0;
-    foundPair *whatWasFound = searchSubstr(needle, &count);
+    foundPair* whatWasFound = searchSubstr(needle, &count);
     if (count == 0 && whatWasFound == NULL)
     {
         setStatusMessage(CONCERNING, "No matches found.");
@@ -77,18 +77,25 @@ void backspaceWord(int col, tRow* line)
 
     while (pos != line->text)
     {
-        if ((*pos == ' '|| *pos == ':') && toDelete != 0)
+        if ((*pos == ' '|| *pos == ':'))
         {
+            pos--; // include the space 
             break;
         }
         pos--;
         toDelete++; 
     }
+
     char* dest = line->text + col - toDelete + 1; 
     char* src = line->text + col + 1; 
     int lenToMove = line->len - col - 1; 
-    memmove(dest, src, lenToMove); 
+
+    if(lenToMove != -1){ // in case we're at end of line 
+        memmove(dest, src, lenToMove); 
+    }
+
     memset((src + lenToMove - toDelete), '\0', toDelete+1);
+
     line->len -= (toDelete); 
     updateRow(line);
     E.cursor_x = E.cursor_x - toDelete; 
@@ -98,9 +105,11 @@ void deleteWord(int col, tRow* line)
 {
     int toDelete = 0;
     char* pos = line->text + col;
-    while((int) (pos - line->text) != line->len)
+
+    while(pos <= (line->text + line->len))
     {
-        if(*pos == ' ' || *pos == ':'){
+        if((*pos == ' ' || *pos == ':')){
+            pos++;
             break;
         }
         pos++;

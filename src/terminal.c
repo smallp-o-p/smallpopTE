@@ -36,6 +36,9 @@ int handleEsc(char c)
     {
         return '\x1b';
     }
+    else if(seq[0] == 'd'){
+        return CTRL_DELETE; 
+    }
     if (read(STDIN_FILENO, &seq[1], 1) != 1)
     {
         return '\x1b';
@@ -99,9 +102,7 @@ int handleEsc(char c)
             return END;
         }
     }
-    else if(seq[0] == 'd'){
-        return CTRL_DELETE; 
-    }
+
     return '\x1b';
 }
 

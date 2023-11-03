@@ -11,6 +11,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <ncurses.h> 
 
 /*
     Includes that should be present everywhere

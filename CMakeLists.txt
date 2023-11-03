@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.1-3.8)
 project(text_editor)
 set(C_STANDARD 11)
+
+find_package(Curses REQUIRED) 
+
+include_directories(${CURSES_INCLUDE_DIR})
 add_executable(main 
         ${CMAKE_SOURCE_DIR}/src/main.c 
         ${CMAKE_SOURCE_DIR}/src/terminal.c 
@@ -11,6 +15,9 @@ add_executable(main
         ${CMAKE_SOURCE_DIR}/src/row.c
         ${CMAKE_SOURCE_DIR}/src/editorFeatures.c
         )
-target_include_directories(main PUBLIC "${CMAKE_SOURCE_DIR}/includes")
+
+
+target_include_directories(main PUBLIC "${CMAKE_SOURCE_DIR}/includes" )
+target_link_libraries(main ${CURSES_LIBRARIES})
 
 

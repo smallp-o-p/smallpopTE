@@ -48,6 +48,9 @@ void processKey()
   case (DELETE):
     delChar(c_x, DELETE);
     break;
+  case CTRL_DELETE:
+    deleteWord(c_x, &E.textRows[c_y]);
+    break; 
   case BACKSPACE:
     delChar(c_x, BACKSPACE);
     break;
