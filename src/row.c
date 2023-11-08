@@ -132,7 +132,7 @@ void insertCharInRow(int c, struct rowOfText *row, int col)
 
 void delChar(int col, int op)
 {
-    if((E.cursor_y == E.numRowsofText && op == BACKSPACE) || (E.cursor_x == 0 && E.cursor_y == 0)){
+    if((E.cursor_y == E.numRowsofText && op == KEY_BACKSPACE) || (E.cursor_x == 0 && E.cursor_y == 0)){
         return; 
     }
     struct rowOfText *tRow = &E.textRows[E.cursor_y];
@@ -143,7 +143,7 @@ void delCharInRow(int op, struct rowOfText *row, int col) // this seems to work 
 {
     switch (op) // no need to call realloc since it's kind of a waste of time to reduce a block by one byte only
     {
-    case (DELETE): // delete character underneath the cursor
+    case (KEY_DC): // delete character underneath the cursor
         if(col == row->len)
         {
             appendRowText(row, (row+1)->text, (row+1)->len);
@@ -159,7 +159,7 @@ void delCharInRow(int op, struct rowOfText *row, int col) // this seems to work 
             break;
         }
 
-    case (BACKSPACE): // delete character to the left of cursor
+    case (KEY_BACKSPACE): // delete character to the left of cursor
         if (col == 0)
         {
             E.cursor_x = E.textRows[E.cursor_y-1].len;
@@ -174,7 +174,7 @@ void delCharInRow(int op, struct rowOfText *row, int col) // this seems to work 
             memset(row->text + (row->len - 1), '\0', 1); // remove trailing character that doesn't get deleted when we memmove
             row->len--;
             updateRow(row);
-            moveCursor(ARROW_LEFT); // follow along :D
+            moveCursor(KEY_LEFT); // follow along :D
             break;
         }
 

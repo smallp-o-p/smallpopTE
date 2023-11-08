@@ -11,22 +11,15 @@ void init_terminal()
     {
         die("tcgetattr");
     };
-    struct termios raw = E.terminal;
-    cfmakeraw(&raw);
-    raw.c_cc[VMIN] = 0;
-    raw.c_cc[VTIME] = 1; 
-    if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
-    {
-        die("tcsetattr");
-    };
+    initscr(); 
+    raw(); 
+    noecho(); 
+    keypad(stdscr, true); 
 }
 
 void cleanup()
 {
-    if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.terminal) == -1)
-    {
-        die("tcsetattr");
-    } 
+    endwin(); 
 }
 
 int handleEsc(char c)
@@ -57,19 +50,19 @@ int handleEsc(char c)
                 switch (seq[1])
                 {
                 case '1':
-                    return HOME;
+                    return KEY_HOME;
                 case '3':
                     return DELETE;
                 case '4':
-                    return END;
+                    return KEY_END;
                 case '5':
                     return PAGE_UP;
                 case '6':
                     return PAGE_DOWN;
                 case '7':
-                    return HOME;
+                    return KEY_HOME;
                 case '8':
-                    return END;
+                    return KEY_END;
                 }
             }
         }
@@ -78,17 +71,17 @@ int handleEsc(char c)
             switch (seq[1])
             {
             case 'A':
-                return ARROW_UP;
+                return KEY_UP;
             case 'B':
-                return ARROW_DOWN;
+                return KEY_DOWN;
             case 'C':
-                return ARROW_RIGHT;
+                return KEY_RIGHT;
             case 'D':
-                return ARROW_LEFT;
+                return KEY_LEFT;
             case 'H':
-                return HOME;
+                return KEY_HOME;
             case 'F':
-                return END;
+                return KEY_END;
             }
         }
     }
@@ -97,9 +90,9 @@ int handleEsc(char c)
         switch (seq[1])
         {
         case 'H':
-            return HOME;
+            return KEY_HOME;
         case 'F':
-            return END;
+            return KEY_END;
         }
     }
 

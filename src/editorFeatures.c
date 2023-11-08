@@ -35,7 +35,7 @@ void findString()
             int a = readKey();
             switch (a)
             {
-            case (ARROW_RIGHT):
+            case (KEY_RIGHT):
                 if ((index + 1) == count)
                 {
                     index = -1;
@@ -44,7 +44,7 @@ void findString()
                 E.cursor_x = whatWasFound[index].col;
                 E.cursor_y = whatWasFound[index].row;
                 break;
-            case (ARROW_LEFT):
+            case (KEY_LEFT):
                 if (index == 0)
                 {
                     index = count;

@@ -16,11 +16,7 @@ void init_editor()
     E.filename = NULL;
     E.statusmsg[0] = '\0';
     E.statusmsg_time = 0;
-    if (getWindowSize(&E.rows, &E.cols) == -1)
-    {
-        die("getWindowSize");
-    }
-    E.rows -= 2; // leave two rows at the bottom empty for status bar and message
+    getmaxyx(stdscr, E.rows, E.cols);
 }
 
 static void sig_handler(int sig)

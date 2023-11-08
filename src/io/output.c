@@ -18,21 +18,13 @@ void refreshScreen()
 {
     scrollHandler();
     struct dynamic_text_buffer dbuf = {NULL, 0};
-
-    append2Buffer(&dbuf, "\x1b[?25l", 6);
-    append2Buffer(&dbuf, "\x1b[H", 3);
+    erase(); 
     drawRows('-', &dbuf);
     drawStatusBar(&dbuf);
     drawStatusMessage(&dbuf);
-
-    char buf[32]; // cursor position why is it (y, x) ????
-    snprintf(buf, sizeof(buf), CURSOR_POSITION_FORMAT, (E.cursor_y - E.rowOffset) + 1, (E.render_x - E.colOffset) + 1);
-
-    append2Buffer(&dbuf, buf, strlen(buf)); // write cursor position to the output buffer
-    append2Buffer(&dbuf, "\x1b[?25h", 6);
-
-    write(STDOUT_FILENO, dbuf.buf, dbuf.len);
-    free((&dbuf)->buf);
+    //free((&dbuf)->buf);
+    move(E.cursor_y, E.cursor_x);
+    refresh(); 
 }
 
 void clearScreen()
@@ -43,28 +35,28 @@ void clearScreen()
 
 void drawRows(char c, struct dynamic_text_buffer *buf)
 {
-    for (int y = 0; y < E.rows; y++)
+    for (int y = 0; y < E.rows-2; y++)
     {
         int filerow = y + E.rowOffset;
         if (filerow >= E.numRowsofText)
         {
-            append2Buffer(buf, &c, 1);
+            printw("%c\n", c);
         }
         else
         {
             int len = E.textRows[filerow].renderSize - E.colOffset;
-            
-
             if (len < 0)
+            {
                 len = 0;
+            }
+                
             if (len > E.cols)
+            {
                 len = E.cols;
-            char* c = &E.textRows[filerow].render[E.colOffset];
-            
-            append2Buffer(buf, &E.textRows[filerow].render[E.colOffset], len);
+            }
+            char* line = &E.textRows[filerow].render[E.colOffset];
+            printw("%s\n", line);
         }
-        append2Buffer(buf, "\x1b[K", 3);
-        append2Buffer(buf, "\r\n", 2);
     }
 }
 
@@ -95,7 +87,7 @@ void scrollHandler()
 
 void drawStatusBar(struct dynamic_text_buffer *buf)
 {
-    append2Buffer(buf, "\x1b[1;7m", 6);
+    attron(A_BOLD | A_REVERSE); 
     char statusText[80], rstatus[80];
     int len = snprintf(statusText, sizeof(statusText),
                        "%.20s - %d lines %s",
@@ -104,58 +96,59 @@ void drawStatusBar(struct dynamic_text_buffer *buf)
     {
         len = E.cols;
     }
-    append2Buffer(buf, statusText, len);
+    addstr(statusText); 
 
     int rlen = snprintf(rstatus, sizeof(rstatus), "%d/%d", E.cursor_y + 1, E.numRowsofText + 1);
-
     while (len < E.cols)
     {
         if (E.cols - len == rlen)
         {
-            append2Buffer(buf, rstatus, rlen);
+            printw("%s\n", rstatus); 
             break;
         }
         else
         {
-            append2Buffer(buf, " ", 1);
+            addch(' '); 
             len++;
         }
     }
-    append2Buffer(buf, "\x1b[m", 3);
-    append2Buffer(buf, "\r\n", 2);
+    attroff(A_BOLD | A_REVERSE); 
 }
 
-void setStatusMessage(int type, const char *stat,  ...)
+void setStatusMessage(msgType type, const char *stat,  ...)
 {
     memset(E.statusmsg, '\0', sizeof(E.statusmsg));
-    char temp[80]; 
-    char* color = ""; 
-    switch(type){
-        case BAD: 
-            color = "\033[91m";
-        case CONCERNING:
-            color = "\033[33m";
-            break;
-        case GOOD: 
-            color = "\033[92m";
-            break; 
-        default:
-            break; 
-    }
-    strncpy(temp, color, sizeof(temp)-1);
-    strcat(temp, stat);
-    if(type != NORMAL){
-        strcat(temp, "\033[0m");
-    }
+    char temp[128]; 
+    memset(temp, '\0', sizeof(temp)); 
+    
+    E.msgtype = type; 
+    strncpy(temp, stat, sizeof(temp)); 
+
     va_list ap;
     va_start(ap, stat);
     vsnprintf(E.statusmsg, sizeof(E.statusmsg), temp, ap);
     va_end(ap);
+
     E.statusmsg_time = time(NULL);
 }
 
 void drawStatusMessage(struct dynamic_text_buffer *buf)
 {
+    int colortype = -1;
+    switch(E.msgtype){
+        case BAD: 
+            colortype = COLOR_RED;
+            break; 
+        case CONCERNING:
+            colortype = CONCERNING; 
+            break;
+        case GOOD: 
+            colortype = COLOR_GREEN; 
+            break; 
+        default:
+            colortype= A_NORMAL;
+            break; 
+    }
     append2Buffer(buf, CLEAR_LINE, 3);
     int len = strlen(E.statusmsg);
     if (len > E.cols)
@@ -165,6 +158,8 @@ void drawStatusMessage(struct dynamic_text_buffer *buf)
     time_t currentTime = time(NULL);
     if (len && (currentTime - E.statusmsg_time < 5))
     {
-        append2Buffer(buf, E.statusmsg, len);
+        attron(colortype);
+        addstr(E.statusmsg); 
+        attroff(colortype); 
     }
 }

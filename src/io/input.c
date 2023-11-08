@@ -12,7 +12,7 @@
 void processKey()
 {
   static int quit = 2;
-  int c = readKey();
+  int c = getch(); 
   switch (c)
   {
   case 0:
@@ -37,31 +37,29 @@ void processKey()
   case ('\r'): // enter;
     insertNewLine();
     break;
-  case CTRL_MACRO('h'):
-    break;
-  case CTRL_MACRO('w'): // this works in the vscode terminal but not on the mint terminal since ctrl+backspace is ^W over there 
+  case CTRL_BACKSPACE: // this works in the vscode terminal but not on the mint terminal since ctrl+backspace is ^W over there 
     backspaceWord(c_x, &E.textRows[c_y]);
     break;
   case CTRL_MACRO('f'):
     findString();
     break; 
-  case (DELETE):
+  case (KEY_DC):
     delChar(c_x, DELETE);
     break;
   case CTRL_DELETE:
     deleteWord(c_x, &E.textRows[c_y]);
     break; 
-  case BACKSPACE:
-    delChar(c_x, BACKSPACE);
+  case KEY_BACKSPACE:
+    delChar(c_x, KEY_BACKSPACE);
     break;
-  case (PAGE_UP):
-  case (PAGE_DOWN):
+  case (KEY_PPAGE):
+  case (KEY_NPAGE):
   {
-    if (c == PAGE_UP)
+    if (c == KEY_PPAGE)
     {
       c_y = E.rowOffset;
     }
-    else if (c == PAGE_DOWN)
+    else if (c == KEY_NPAGE)
     {
       c_y = E.rowOffset + E.rows - 1;
       if (c_y > E.numRowsofText)
@@ -72,19 +70,19 @@ void processKey()
     int times = E.rows;
     while (times--)
     {
-      moveCursor(c == PAGE_UP ? ARROW_UP : ARROW_DOWN);
+      moveCursor(c == KEY_PPAGE ? KEY_UP : KEY_DOWN);
     }
   }
   break;
   case CTRL_MACRO('l'):
   case '\x1b':
     break;
-  case (HOME):
-  case (END):
-  case (ARROW_UP):
-  case (ARROW_DOWN):
-  case (ARROW_LEFT):
-  case (ARROW_RIGHT):
+  case (KEY_HOME):
+  case (KEY_END):
+  case (KEY_UP):
+  case (KEY_DOWN):
+  case (KEY_LEFT):
+  case (KEY_RIGHT):
     moveCursor(c);
     break;
   default:
@@ -130,9 +128,10 @@ char *makePrompt(char *promptFormat)
   memset(userBuffer, '\0', bufferSize);
   do
   {
-    int a = readKey();
     setStatusMessage(NORMAL, promptFormat, userBuffer);
     refreshScreen();
+
+    int a = getch();
 
     switch (a)
     {
@@ -151,7 +150,7 @@ char *makePrompt(char *promptFormat)
       refreshScreen();
       free(userBuffer);
       return NULL;
-    case (BACKSPACE):
+    case (KEY_BACKSPACE):
       if (userBuffLen != 0)
       {
         userBuffer[--userBuffLen] = '\0';
@@ -175,7 +174,7 @@ void moveCursor(int direction)
   struct rowOfText *currentRow = (c_y >= E.numRowsofText) ? NULL : &E.textRows[c_y];
   switch (direction)
   {
-  case ARROW_LEFT:
+  case KEY_LEFT:
     if (c_x != START_X)
     {
       c_x--;
@@ -186,7 +185,7 @@ void moveCursor(int direction)
       c_x = E.textRows[c_y].len;
     }
     break;
-  case ARROW_RIGHT:
+  case KEY_RIGHT:
     if (currentRow && c_x < currentRow->len)
     {
       c_x++;
@@ -197,22 +196,22 @@ void moveCursor(int direction)
       c_x = START_X;
     }
     break;
-  case ARROW_UP:
+  case KEY_UP:
     if (c_y != TOP_FRAME)
     {
       c_y--;
     }
     break;
-  case ARROW_DOWN:
+  case KEY_DOWN:
     if (c_y < E.numRowsofText)
     {
       c_y++;
     }
     break;
-  case HOME:
+  case KEY_HOME:
     c_x = START_X;
     break;
-  case END:
+  case KEY_END:
     if (c_y < E.numRowsofText)
     {
       c_x = E.textRows[c_y].len;
@@ -224,7 +223,7 @@ void moveCursor(int direction)
   int rowLen = currentRow ? currentRow->len : 0;
   if (c_x > rowLen)
   {
-    c_x = rowLen + 1;
+    c_x = rowLen;
   }
 }
 

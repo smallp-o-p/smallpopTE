@@ -16,18 +16,24 @@
 /*
     Includes that should be present everywhere
 */
+
+typedef enum statusMessageType{
+    BAD = -1, 
+    CONCERNING,
+    NORMAL,
+    GOOD,
+} msgType;
 struct copyBuffer{ // can copy only one character at a time
     int len;
     char copied; 
 };
-struct rowOfText{
+typedef struct rowOfText{
     int len; // length of string, length of array
     char* text; // raw text 
     int renderSize; // length of render string
     char* render; // text converted to work with our text editor
     char* highLighting; 
-}; 
-typedef struct rowOfText tRow; 
+} tRow;  
 struct terminalConfig{
     int cursor_x, cursor_y; 
     int render_x; 
@@ -42,6 +48,7 @@ struct terminalConfig{
     struct copyBuffer cvBuf; 
     char* filename; 
     char statusmsg[80];
+    msgType msgtype; 
     time_t statusmsg_time; 
 } extern E; 
 
@@ -50,18 +57,12 @@ struct terminalConfig{
 #define c_x E.cursor_x
 
 /* Should only be keys that start with an escape (1b or 27)*/
-enum specialKeys{
-    BACKSPACE = 127, 
-    ARROW_LEFT = 300,
-    ARROW_RIGHT, 
-    ARROW_UP,
-    ARROW_DOWN, 
-    HOME,
-    END,
+enum specialKeys{ 
     PAGE_UP,
     PAGE_DOWN,
     DELETE, 
-    CTRL_DELETE
+    CTRL_DELETE = 520,
+    CTRL_BACKSPACE = 8
 };
 
 
