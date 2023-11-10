@@ -18,11 +18,20 @@
 */
 
 typedef enum statusMessageType{
-    BAD = -1, 
+    BAD = 1, 
     CONCERNING,
     NORMAL,
     GOOD,
 } msgType;
+
+typedef enum syntaxTokenType{
+    KEYWORD,
+    IDENTIFER,
+    CONSTANT,
+    STRING_LITERAL,
+    OPERATOR,
+    PUNCTUATOR
+} tokens; 
 struct copyBuffer{ // can copy only one character at a time
     int len;
     char copied; 

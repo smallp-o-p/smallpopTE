@@ -32,7 +32,7 @@ void findString()
         {
             setStatusMessage(GOOD, "Found %d occurences: %d/%d ([>] next, [<] back, [esc] cancel)", count, (index + 1), count, count);
             refreshScreen();
-            int a = readKey();
+            int a = getch();
             switch (a)
             {
             case (KEY_RIGHT):

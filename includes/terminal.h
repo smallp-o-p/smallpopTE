@@ -1,6 +1,7 @@
 #pragma once
-void init_terminal();
+void initTerminal();
 void cleanup(); 
+void initColors(); 
 int readKey(); 
 int handleEsc(char c);
 int getWindowSize(int* rows, int* cols); 

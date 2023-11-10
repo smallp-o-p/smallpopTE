@@ -134,22 +134,6 @@ void setStatusMessage(msgType type, const char *stat,  ...)
 
 void drawStatusMessage(struct dynamic_text_buffer *buf)
 {
-    int colortype = -1;
-    switch(E.msgtype){
-        case BAD: 
-            colortype = COLOR_RED;
-            break; 
-        case CONCERNING:
-            colortype = CONCERNING; 
-            break;
-        case GOOD: 
-            colortype = COLOR_GREEN; 
-            break; 
-        default:
-            colortype= A_NORMAL;
-            break; 
-    }
-    append2Buffer(buf, CLEAR_LINE, 3);
     int len = strlen(E.statusmsg);
     if (len > E.cols)
     {
@@ -158,8 +142,13 @@ void drawStatusMessage(struct dynamic_text_buffer *buf)
     time_t currentTime = time(NULL);
     if (len && (currentTime - E.statusmsg_time < 5))
     {
-        attron(colortype);
-        addstr(E.statusmsg); 
-        attroff(colortype); 
+        if(E.msgtype != NORMAL){
+            attron(COLOR_PAIR(E.msgtype));
+            printw("%s", E.statusmsg); 
+            attroff(COLOR_PAIR(E.msgtype)); 
+        }
+        else{
+            addstr(E.statusmsg); 
+        }
     }
 }

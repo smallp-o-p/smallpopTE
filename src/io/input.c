@@ -17,6 +17,10 @@ void processKey()
   {
   case 0:
     return;
+  case (KEY_RESIZE):
+    getmaxyx(stdscr, E.rows, E.cols);
+    refreshScreen(); 
+    break; 
   case (CTRL_MACRO('q')):
     if (E.dirty)
     {
@@ -137,7 +141,7 @@ char *makePrompt(char *promptFormat)
     {
     case 0:
       break;
-    case ('\r'):
+    case (10):
     {
       if (userBuffLen != 0)
       {
@@ -147,7 +151,6 @@ char *makePrompt(char *promptFormat)
     }
     case ('\x1b'):
       setStatusMessage(CONCERNING, "Action cancelled.");
-      refreshScreen();
       free(userBuffer);
       return NULL;
     case (KEY_BACKSPACE):

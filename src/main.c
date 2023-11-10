@@ -29,10 +29,9 @@ static void sig_handler(int sig)
             break; 
         case SIGWINCH:
         {
-            if (getWindowSize(&E.rows, &E.cols) == -1)
-            {
-                die("getWindowSize");
-            }
+            getmaxyx(stdscr, E.rows, E.cols);
+            refreshScreen();
+            break; 
         }
     }
 }
@@ -45,7 +44,7 @@ int main(int argc, char **argv)
         exit(0);
     }
     atexit(cleanup);
-    init_terminal();
+    initTerminal();
     init_editor();
     if (argc >= 2)
     {
@@ -54,7 +53,6 @@ int main(int argc, char **argv)
     setStatusMessage(NORMAL, "Ctrl-Q to Quit!");
     while (1)
     {
-        signal(SIGWINCH, sig_handler);
         signal(SIGSEGV, sig_handler);
         refreshScreen();
         processKey();
