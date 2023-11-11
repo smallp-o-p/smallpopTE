@@ -29,7 +29,7 @@ void addRow(int at, char *str, size_t len)
     updateRow(&E.textRows[at]);
 
     E.numRowsofText++;
-    E.dirty++;
+    E.dirty = true;
 }
 // copy chars from row->text into render
 void updateRow(struct rowOfText *row)
@@ -70,7 +70,7 @@ void appendRowText(struct rowOfText* row, char* str, int len){
     row->len += len; 
     row->text[row->len] = '\0';
     updateRow(row);
-    E.dirty++; 
+    E.dirty = true; 
 }
 
 void moveRowText(struct rowOfText *from, struct rowOfText *to)
@@ -88,7 +88,7 @@ void removeRow(int row)
     free(E.textRows[row].text);
     memmove(&E.textRows[row], &E.textRows[row+1], sizeof(struct rowOfText)*(E.numRowsofText - row - 1));
     E.numRowsofText--;
-    E.dirty++;
+    E.dirty = true;
 }
 
 int rowCx2Rx(struct rowOfText *row, int cx)
@@ -127,7 +127,7 @@ void insertCharInRow(int c, struct rowOfText *row, int col)
     row->len++;
     row->text[col] = c;
     updateRow(row);
-    E.dirty++;
+    E.dirty = true;
 }
 
 void delChar(int col, int op)
@@ -179,7 +179,7 @@ void delCharInRow(int op, struct rowOfText *row, int col) // this seems to work 
         }
 
     }
-    E.dirty++;
+    E.dirty = true;
 }
 
 foundPair* searchSubstr(char* needle, int* countToUpdate){

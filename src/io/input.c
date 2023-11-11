@@ -5,13 +5,13 @@
 #include "file.h"
 #include "row.h"
 #include "editorFeatures.h"
+#include "shortcuts.h"
 
 #define START_X 0
 #define TOP_FRAME 0
 
 void processKey()
 {
-  static int quit = 2;
   int c = getch(); 
   switch (c)
   {
@@ -39,19 +39,30 @@ void processKey()
     writeToFile(NULL);
     break;
   case ('\r'): // enter;
+    rememberTextRow(&E.textRows[c_y]);
     insertNewLine();
     break;
-  case CTRL_BACKSPACE: // this works in the vscode terminal but not on the mint terminal since ctrl+backspace is ^W over there 
+  case CTRL_BACKSPACE:
+    rememberTextRow(&E.textRows[c_y]);
     backspaceWord(c_x, &E.textRows[c_y]);
     break;
   case CTRL_MACRO('f'):
     findString();
     break; 
+  case CTRL_MACRO('z'):
+    undo();
+    break;
   case (KEY_DC):
+    rememberTextRow(&E.textRows[c_y]);
     delChar(c_x, DELETE);
     break;
   case CTRL_DELETE:
+    rememberTextRow(&E.textRows[c_y]);
     deleteWord(c_x, &E.textRows[c_y]);
+    break; 
+  case CTRL_SHIFT_DELETE:
+    rememberTextRow(&E.textRows[c_y]);
+    clrRightOfCursor(c_x, &E.textRows[c_y]); 
     break; 
   case KEY_BACKSPACE:
     delChar(c_x, KEY_BACKSPACE);
@@ -91,11 +102,11 @@ void processKey()
     break;
   default:
     if(!iscntrl(c)){
+      rememberTextRow(&E.textRows[c_y]);
       insertChar(c);
     } 
     break;
   }
-  quit = 2;
 }
 
 void exitConfirm()

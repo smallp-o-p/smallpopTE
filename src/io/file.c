@@ -63,7 +63,7 @@ int writeToFile(char *fileName)
     ftruncate(fileno(fp), length);
     fwrite(toWrite, sizeof(char), length, fp);
     fclose(fp);
-    setStatusMessage(GOOD, "Wrote %d %s to: %s", E.dirty == 0 ? E.numRowsofText : E.dirty, E.dirty == 0 ? "lines" : "bytes",fileName);
+    setStatusMessage(GOOD, "Wrote %d %s to: %s", E.numRowsofText, "lines", fileName);
     E.dirty = 0;
     E.filename = fileName; 
     free(toWrite);

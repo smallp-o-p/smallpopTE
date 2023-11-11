@@ -32,6 +32,7 @@ void initColors(){
 
 void cleanup()
 {
+    cleanupStack(E.rememberedText);
     endwin(); 
 }
 

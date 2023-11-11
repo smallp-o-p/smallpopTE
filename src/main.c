@@ -15,7 +15,9 @@ void init_editor()
     E.rowOffset = 0;
     E.filename = NULL;
     E.statusmsg[0] = '\0';
+    E.rememberedText = initStack();
     E.statusmsg_time = 0;
+    
     getmaxyx(stdscr, E.rows, E.cols);
 }
 

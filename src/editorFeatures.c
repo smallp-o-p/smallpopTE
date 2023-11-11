@@ -70,55 +70,14 @@ void findString()
     free(whatWasFound);
 }
 
-void backspaceWord(int col, tRow* line)
-{
-    int toDelete = 0;
-    char* pos = line->text + col;
+void rememberTextRow(tRow* row){
+    pastTextRow* remember = malloc(sizeof(pastTextRow)); 
+    remember->text = malloc(sizeof(char) * row->len);
+    strncpy(remember->text, row->text, row->len);  
+    remember->len = row->len;
+    remember->rowNum = E.cursor_y;
 
-    while (pos != line->text)
-    {
-        if ((*pos == ' '|| *pos == ':'))
-        {
-            pos--; // include the space 
-            break;
-        }
-        pos--;
-        toDelete++; 
-    }
-
-    char* dest = line->text + col - toDelete + 1; 
-    char* src = line->text + col + 1; 
-    int lenToMove = line->len - col - 1; 
-
-    if(lenToMove != -1){ // in case we're at end of line 
-        memmove(dest, src, lenToMove); 
-    }
-
-    memset((src + lenToMove - toDelete), '\0', toDelete+1);
-
-    line->len -= (toDelete); 
-    updateRow(line);
-    E.cursor_x = E.cursor_x - toDelete; 
-}
-
-void deleteWord(int col, tRow* line)
-{
-    int toDelete = 0;
-    char* pos = line->text + col;
-
-    while(pos <= (line->text + line->len))
-    {
-        if((*pos == ' ' || *pos == ':')){
-            pos++;
-            break;
-        }
-        pos++;
-        toDelete++;
-    }
-
-    memmove(line->text+col, pos, line->len - col); 
-    line->len -= toDelete; 
-    updateRow(line);
+    push(E.rememberedText, (void*) remember); 
 }
 
 void highlightKeywords(char *line)
