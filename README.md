@@ -1,7 +1,20 @@
-# smallpop's wish.com GNU nano 
+# smallpop's Terminal Text Editor
 
-A small terminal text editor. 
-Built mostly to get experience writing C and to learn how to use CMake, most of this code was inspired or taken [from here](https://viewsourcecode.org/snaptoken/kilo/):  
-Currently only allows text input, saving and substring search. The goal is to build it into something that has a similar amount of editing features as GNU nano.
+> A small terminal text editor for Linux built using ncurses.
 
-Use CMake to build an executable. 
+## Build Steps
+<ol>
+    <li> 
+        Make sure ncurses is available in your environment. [Instructions on how to do so are here.](https://www.cyberciti.biz/faq/linux-install-ncurses-library-headers-on-debian-ubuntu-centos-fedora/)
+    </li>
+    <li> 
+        Build using CMake. 
+    </li>
+</ol>
+
+## Usage 
+> {PathToBuiltExecutable} {FileDirectory}
+
+## About
+
+Built mostly to get experience writing C and to learn how to use a build system. Can read text files, write text files and some basic shortcuts are implemented. 

@@ -15,7 +15,7 @@ add_executable(main
         ${CMAKE_SOURCE_DIR}/src/row.c
         ${CMAKE_SOURCE_DIR}/src/editorFeatures.c
         ${CMAKE_SOURCE_DIR}/src/shortcuts.c
-        ${CMAKE_SOURCE_DIR}/src/datastructures.c
+        ${CMAKE_SOURCE_DIR}/src/data_structures/stack.c
         )
 
 target_include_directories(main PUBLIC "${CMAKE_SOURCE_DIR}/includes")

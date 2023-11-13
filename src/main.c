@@ -15,7 +15,8 @@ void init_editor()
     E.rowOffset = 0;
     E.filename = NULL;
     E.statusmsg[0] = '\0';
-    E.rememberedText = initStack();
+    E.undoStack = initStack();
+    E.redoStack = initStack(); 
     E.statusmsg_time = 0;
     
     getmaxyx(stdscr, E.rows, E.cols);
@@ -29,17 +30,13 @@ static void sig_handler(int sig)
             cleanup();
             exit(-1);
             break; 
-        case SIGWINCH:
-        {
-            getmaxyx(stdscr, E.rows, E.cols);
-            refreshScreen();
-            break; 
-        }
     }
 }
 
+
 int main(int argc, char **argv)
 {
+
     if (argc > 2)
     {
         printf("Invalid no. of arguments, exiting\n");
@@ -61,3 +58,4 @@ int main(int argc, char **argv)
     }
     return 0;
 }
+

@@ -12,8 +12,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <ncurses.h> 
-
-#define INITIAL_STACK_SIZE 32
+#include "stack.h"
 
 /*
     Includes that should be present everywhere
@@ -34,6 +33,7 @@ typedef enum syntaxTokenType{
     OPERATOR,
     PUNCTUATOR
 } tokens; 
+
 struct copyBuffer{ // can copy only one character at a time
     int len;
     char copied; 
@@ -46,24 +46,24 @@ typedef struct rowOfText{
     char* highLighting; 
 } tRow;  
 
+typedef enum actions{
+    ADD_CHAR,
+    ADD_SPACE,
+    DEL_CHAR,
+    DEL_WORD,
+    DEL_LINE,
+    BACKSPACE_CHAR,
+    BACKSPACE_WORD, 
+}actionType;
+
 typedef struct softDeletedRowOfText{
     int len;
     int rowNum; 
     char* text;
+    time_t timestamp; 
+    char addedChar; 
+    actionType action; 
 } pastTextRow; 
-
-typedef struct stackThing
-{
-    pastTextRow **data;
-    int top;
-    unsigned int stackSize;
-
-} Stack;
-
-void push(Stack* stack, pastTextRow* row);
-pastTextRow* pop(Stack* stack);
-Stack* initStack();
-void cleanupStack(Stack* stack);
 
 struct terminalConfig{
     int cursor_x, cursor_y; 
@@ -82,14 +82,15 @@ struct terminalConfig{
     char statusmsg[80];
     msgType msgtype; 
     time_t statusmsg_time; 
-    Stack* rememberedText; // this should only hold past text structs
+    Stack* undoStack; 
+    Stack* redoStack; 
 } extern E; 
 
 #define c_y E.cursor_y
 
 #define c_x E.cursor_x
 
-/* Should only be keys that start with an escape (1b or 27)*/
+
 enum specialKeys{ 
     PAGE_UP,
     PAGE_DOWN,

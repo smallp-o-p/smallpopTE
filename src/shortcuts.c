@@ -1,8 +1,9 @@
 #include "pch.h"
 #include "shortcuts.h"
 #include "row.h"
+#include "input.h"
 
-void backspaceWord(int col, tRow *line)
+int backspaceWord(int col, tRow *line)
 {
     int toDelete = 0;
     char *pos = line->text + col;
@@ -33,9 +34,12 @@ void backspaceWord(int col, tRow *line)
     updateRow(line);
     E.cursor_x = E.cursor_x - toDelete;
     E.dirty = true;
+
+    return toDelete;
 }
 
-void deleteWord(int col, tRow *line)
+// returns the amount of characters affected
+int deleteWord(int col, tRow *line)
 {
     int toDelete = 0;
     char *pos = line->text + col;
@@ -55,6 +59,7 @@ void deleteWord(int col, tRow *line)
     line->len -= toDelete;
     updateRow(line);
     E.dirty = true;
+    return toDelete;
 }
 
 void clrRightOfCursor(int col, tRow *line)
@@ -70,14 +75,65 @@ void clrRightOfCursor(int col, tRow *line)
 
 void undo()
 {
-    pastTextRow* popped = (pastTextRow*) pop(E.rememberedText); 
-    if(popped == NULL){
+    pastTextRow *popped = (pastTextRow *)pop(E.undoStack);
+    pastTextRow *toRedo = popped;
+
+    if (popped == NULL)
+    {
+        return;
+    }
+    push(E.redoStack, (void*) toRedo);
+    if (popped->action == ADD_CHAR)
+    {
+        pastTextRow *lookFurtherBack = (pastTextRow *)pop(E.undoStack);
+        if (lookFurtherBack != NULL)
+        {
+            while (lookFurtherBack->action == ADD_CHAR && lookFurtherBack->rowNum == popped->rowNum)
+            {
+                if(popped != toRedo){ // don't free the most recent
+                    free(popped);
+                }
+                popped = lookFurtherBack;
+                lookFurtherBack = (pastTextRow *)pop(E.undoStack);
+                if (lookFurtherBack == NULL)
+                {
+                    break;
+                }
+            }
+            if(lookFurtherBack->action == ADD_SPACE){
+                popped = (pastTextRow*) pop(E.undoStack); // removes the space
+                free(lookFurtherBack);
+            }
+            else{
+                free(popped);
+                popped = lookFurtherBack; 
+            }
+            
+        }
+    }
+    E.textRows[popped->rowNum].text = popped->text;
+    E.textRows[popped->rowNum].len = popped->len;
+    updateRow(&E.textRows[popped->rowNum]);
+    if (c_y == popped->rowNum)
+    {
+        c_x = popped->len;
+    }
+    free(popped);
+}
+
+void redo() // this can only happen immediately after an undo
+{
+    if(E.redoStack->top == -1){
         return; 
     }
-    else{
-        E.textRows[popped->rowNum].text = popped->text;
-        E.textRows[popped->rowNum].len = popped->len;
-        updateRow(&E.textRows[popped->rowNum]);
-    }
 
+    pastTextRow *popped = (pastTextRow *)pop(E.redoStack);
+    E.textRows[popped->rowNum].text = popped->text;
+    E.textRows[popped->rowNum].len = popped->len;
+    updateRow(&E.textRows[popped->rowNum]);
+    if(c_y == popped->rowNum)
+    {
+        c_x = popped->len; 
+    }
+    free(popped);
 }

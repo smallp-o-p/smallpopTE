@@ -20,6 +20,7 @@ int openFile(char *filename)
         if (!fp)
         {
             die("fopen");
+            return -1; 
         }
         size_t lineCap = 0;
         size_t lineLen;
@@ -59,14 +60,20 @@ int writeToFile(char *fileName)
 
     int length; 
     char* toWrite = rowsToCharBuffer(&length, E.textRows, E.numRowsofText);
-
-    ftruncate(fileno(fp), length);
-    fwrite(toWrite, sizeof(char), length, fp);
+    if(toWrite != NULL)
+    {
+        ftruncate(fileno(fp), length);
+        fwrite(toWrite, sizeof(char), length, fp);
+        free(toWrite);
+    }
+    else
+    {
+        fwrite("", sizeof(char), length, fp);
+    }
     fclose(fp);
     setStatusMessage(GOOD, "Wrote %d %s to: %s", E.numRowsofText, "lines", fileName);
     E.dirty = 0;
     E.filename = fileName; 
-    free(toWrite);
     return 0;
 }
 
@@ -79,6 +86,9 @@ char* rowsToCharBuffer(int* len, tRow* rows, int numRows){
     }
 
     *len = totalLen;
+    if(totalLen == 0){
+        return NULL; 
+    }
     char* buffer = malloc(totalLen); 
     char* ptr = buffer; 
 

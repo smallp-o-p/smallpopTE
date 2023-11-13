@@ -205,6 +205,7 @@ foundPair* searchSubstr(char* needle, int* countToUpdate){
     }
     if(count == 0){
         *countToUpdate = 0;
+        free(pairs);
         return NULL; 
     }
     else{

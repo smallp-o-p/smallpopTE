@@ -10,6 +10,8 @@
 #define START_X 0
 #define TOP_FRAME 0
 
+#define KEY_SPACE 32
+
 void processKey()
 {
   int c = getch(); 
@@ -38,12 +40,14 @@ void processKey()
   case (CTRL_MACRO('x')):
     writeToFile(NULL);
     break;
-  case ('\r'): // enter;
-    rememberTextRow(&E.textRows[c_y]);
+  case (10): // enter;
     insertNewLine();
     break;
   case CTRL_BACKSPACE:
-    rememberTextRow(&E.textRows[c_y]);
+    if(E.textRows[c_y].len > 0)
+    {
+      rememberTextRow(&E.textRows[c_y], BACKSPACE_WORD); 
+    }
     backspaceWord(c_x, &E.textRows[c_y]);
     break;
   case CTRL_MACRO('f'):
@@ -52,19 +56,34 @@ void processKey()
   case CTRL_MACRO('z'):
     undo();
     break;
+  case(CTRL_MACRO('y')):
+    redo();
+    break;
   case (KEY_DC):
-    rememberTextRow(&E.textRows[c_y]);
+    if(E.textRows[c_y].len > 0)
+    {
+      rememberTextRow(&E.textRows[c_y], DEL_CHAR); 
+    }
     delChar(c_x, DELETE);
     break;
   case CTRL_DELETE:
-    rememberTextRow(&E.textRows[c_y]);
+    if(E.textRows[c_y].len > 0)
+    {
+      rememberTextRow(&E.textRows[c_y], DEL_WORD); 
+    }
     deleteWord(c_x, &E.textRows[c_y]);
     break; 
   case CTRL_SHIFT_DELETE:
-    rememberTextRow(&E.textRows[c_y]);
+    if(E.textRows[c_y].len > 0)
+    {
+      rememberTextRow(&E.textRows[c_y], DEL_LINE); 
+    }
     clrRightOfCursor(c_x, &E.textRows[c_y]); 
     break; 
   case KEY_BACKSPACE:
+    if(E.textRows[c_y].len > 0){
+      rememberTextRow(&E.textRows[c_y], BACKSPACE_CHAR); 
+    }
     delChar(c_x, KEY_BACKSPACE);
     break;
   case (KEY_PPAGE):
@@ -102,8 +121,11 @@ void processKey()
     break;
   default:
     if(!iscntrl(c)){
-      rememberTextRow(&E.textRows[c_y]);
       insertChar(c);
+      rememberTextRow(&E.textRows[c_y], c == KEY_SPACE ? ADD_SPACE : ADD_CHAR); 
+      if(E.redoStack->top != -1){
+        clearStack(E.redoStack);
+      }
     } 
     break;
   }

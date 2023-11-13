@@ -32,7 +32,8 @@ void initColors(){
 
 void cleanup()
 {
-    cleanupStack(E.rememberedText);
+    cleanupStack(E.undoStack);
+    cleanupStack(E.redoStack);
     endwin(); 
 }
 

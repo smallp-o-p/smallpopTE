@@ -70,14 +70,23 @@ void findString()
     free(whatWasFound);
 }
 
-void rememberTextRow(tRow* row){
+void rememberTextRow(tRow* row, actionType lastAction){
+    
     pastTextRow* remember = malloc(sizeof(pastTextRow)); 
-    remember->text = malloc(sizeof(char) * row->len);
-    strncpy(remember->text, row->text, row->len);  
-    remember->len = row->len;
-    remember->rowNum = E.cursor_y;
 
-    push(E.rememberedText, (void*) remember); 
+    if(row == NULL){
+        remember->text = NULL;
+        remember->len = 0; 
+    }
+    else{
+        remember->text = malloc(sizeof(char) * row->len);
+        strncpy(remember->text, row->text, row->len);
+        remember->len = row->len;
+    } 
+    remember->rowNum = c_y;
+    remember->timestamp = time(NULL); 
+    remember->action = lastAction; 
+    push(E.undoStack, (void*) remember); 
 }
 
 void highlightKeywords(char *line)
