@@ -5,7 +5,7 @@
 ## Build Steps
 <ol>
     <li> 
-        Make sure ncurses is available in your environment. [Instructions on how to do so are here.](https://www.cyberciti.biz/faq/linux-install-ncurses-library-headers-on-debian-ubuntu-centos-fedora/)
+        Make sure ncurses is available in your environment.
     </li>
     <li> 
         Build using CMake. 
