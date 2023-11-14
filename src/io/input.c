@@ -123,9 +123,7 @@ void processKey()
     if(!iscntrl(c)){
       insertChar(c);
       rememberTextRow(&E.textRows[c_y], c == KEY_SPACE ? ADD_SPACE : ADD_CHAR); 
-      if(E.redoStack->top != -1){
-        clearStack(E.redoStack);
-      }
+      clearStack(E.redoStack);
     } 
     break;
   }

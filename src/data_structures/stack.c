@@ -45,6 +45,9 @@ void *pop(Stack *stack)
 
 void *peek(Stack *stack)
 {
+    if(stack->top < 0){
+        return NULL; 
+    }
     return stack->data[stack->top];
 }
 

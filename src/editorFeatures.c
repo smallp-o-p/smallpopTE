@@ -83,6 +83,11 @@ void rememberTextRow(tRow* row, actionType lastAction){
         strncpy(remember->text, row->text, row->len);
         remember->len = row->len;
     } 
+
+    if(lastAction == ADD_CHAR || lastAction == ADD_SPACE){
+        remember->at = c_x; 
+    }
+
     remember->rowNum = c_y;
     remember->timestamp = time(NULL); 
     remember->action = lastAction; 

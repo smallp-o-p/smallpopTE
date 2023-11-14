@@ -54,14 +54,16 @@ typedef enum actions{
     DEL_LINE,
     BACKSPACE_CHAR,
     BACKSPACE_WORD, 
+    UNDO_TEMP, 
+    REDO,
 }actionType;
 
 typedef struct softDeletedRowOfText{
     int len;
     int rowNum; 
+    int at; 
     char* text;
     time_t timestamp; 
-    char addedChar; 
     actionType action; 
 } pastTextRow; 
 

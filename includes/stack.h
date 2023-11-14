@@ -18,5 +18,6 @@ void* pop(Stack* stack);
 void clearStack(Stack* stack); 
 Stack* initStack();
 void cleanupStack(Stack* stack);
+void* peek(Stack* stack);
 
 
