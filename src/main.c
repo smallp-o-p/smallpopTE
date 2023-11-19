@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "terminal.h"
 #include "error.h"
+#include "editorFeatures.h"
 #include "input.h"
 #include "output.h"
 #include "file.h"
@@ -16,6 +17,7 @@ void init_editor()
     E.filename = NULL;
     E.statusmsg[0] = '\0';
     E.undoStack = initStack();
+    
     E.redoStack = initStack(); 
     E.statusmsg_time = 0;
     

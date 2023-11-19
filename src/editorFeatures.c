@@ -41,8 +41,8 @@ void findString()
                     index = -1;
                 }
                 index++;
-                E.cursor_x = whatWasFound[index].col;
-                E.cursor_y = whatWasFound[index].row;
+                c_x = whatWasFound[index].col;
+                c_y = whatWasFound[index].row;
                 break;
             case (KEY_LEFT):
                 if (index == 0)
@@ -50,16 +50,16 @@ void findString()
                     index = count;
                 }
                 index--;
-                E.cursor_x = whatWasFound[index].col;
-                E.cursor_y = whatWasFound[index].row;
+                c_x = whatWasFound[index].col;
+                c_y = whatWasFound[index].row;
                 break;
             case ('\r'):
                 setStatusMessage(NORMAL, "Exited.");
                 return;
             case ('\x1b'):
                 setStatusMessage(NORMAL, "Exited.");
-                E.cursor_x = lastCursorPos_x;
-                E.cursor_y = lastCursorPos_y;
+                c_x = lastCursorPos_x;
+                c_y = lastCursorPos_y;
                 return;
             default:
                 break;
@@ -74,9 +74,17 @@ void rememberTextRow(tRow* row, actionType lastAction){
     
     pastTextRow* remember = malloc(sizeof(pastTextRow)); 
 
-    if(row == NULL){
-        remember->text = NULL;
-        remember->len = 0; 
+    if(!row){ // null means initial state
+        if(!(&E.textRows[c_y])) // empty file
+        {
+            remember->text = NULL;
+            remember->len = 0; 
+        }
+        else{ // non-empty file
+            remember->text = malloc(sizeof(char) * E.textRows[c_y].len);
+            strncpy(remember->text, E.textRows[c_y].text, E.textRows[c_y].len);
+            remember->len = E.textRows[c_y].len;
+        } 
     }
     else{
         remember->text = malloc(sizeof(char) * row->len);
@@ -84,13 +92,11 @@ void rememberTextRow(tRow* row, actionType lastAction){
         remember->len = row->len;
     } 
 
-    if(lastAction == ADD_CHAR || lastAction == ADD_SPACE){
-        remember->at = c_x; 
-    }
-
+    remember->at = c_x; 
     remember->rowNum = c_y;
     remember->timestamp = time(NULL); 
     remember->action = lastAction; 
+
     push(E.undoStack, (void*) remember); 
 }
 

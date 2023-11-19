@@ -2,9 +2,13 @@
 #include "shortcuts.h"
 #include "row.h"
 #include "input.h"
+#include "editorFeatures.h"
 
 #define peekUndoStack() (pastTextRow *)peek(E.undoStack)
 #define popUndoStack() (pastTextRow *)pop(E.undoStack)
+
+#define pushUndoStack(k) push(E.undoStack, k)
+#define pushRedoStack(k) push(E.redoStack, k) 
 
 int backspaceWord(int col, tRow *line)
 {
@@ -77,105 +81,64 @@ void clrRightOfCursor(int col, tRow *line)
 
 void undo()
 {
-    if (peek(E.undoStack) == NULL)
+    pastTextRow* previousState;
+    pastTextRow* currentState; 
+    pastTextRow* revertTo; 
+    if(!(previousState = popUndoStack()))
     {
-        return;
+        return; 
     }
 
-    pastTextRow *mostRecentState = popUndoStack();
-    pastTextRow *revertTo; 
-    pastTextRow *rightptr;
-    char *text;
-    int len;
-    int rowNum;
-    switch (mostRecentState->action)
+    switch(previousState->action)
     {
-    case (ADD_CHAR):
-    {
-        pastTextRow *rightptr = mostRecentState; 
-        pastTextRow *leftptr = popUndoStack();  
-        while(leftptr) // we're using the fact that the letters in words of a germanic language go from left to write to our advantage
+        case(INITIAL_STATE):
         {
-            /*
-                Undo "batches" of successive inputted characters, stop in front of spaces or when the popped row is in a different row from the most recent state
-                To detect a batch we basically check if the position of the character inserted at the rightptr, which should be the more recent state is 
-                to the immediate right of leftptr, which should be the state immediately before. 
-                Consider moving this into book-keeping so we don't have to store so many row states  
-            */
-
-            if((rightptr->at - leftptr->at) != 1 || leftptr->action == ADD_SPACE || leftptr->rowNum != mostRecentState->rowNum)  
-            {
-                if(leftptr->action == ADD_SPACE)
-                {
-                    push(E.undoStack, leftptr); 
-                } 
-                if(leftptr->rowNum != mostRecentState->rowNum)
-                {
-                    leftptr = rightptr; 
-                }
-                break; 
-            }
-            if(rightptr != mostRecentState)
-            {
-                free(rightptr); 
-            }
-            rightptr = leftptr;
-            leftptr = popUndoStack(); 
+            pushUndoStack(previousState);
+            revertTo = previousState;
+            break;  
         }
-        revertTo = leftptr; 
-        break;
-    } 
-    case (ADD_SPACE): // we cannot guarantee that the previous action was on the same line 
-    {
-        revertTo = malloc(sizeof(pastTextRow));
-
-        revertTo->rowNum = mostRecentState->rowNum; 
-
-        char* temp = malloc(sizeof(mostRecentState->text) * mostRecentState->len);
-
-        revertTo->text = strncpy(temp, mostRecentState->text, mostRecentState->len);
-
-        memmove(revertTo->text + mostRecentState->at - 1, revertTo->text + mostRecentState->at, mostRecentState->len - (mostRecentState->at - 1));
-        
-        revertTo->len = mostRecentState->len-1; 
-
-        revertTo->at = revertTo->len; 
-        break; 
-    }
-    case(REDO):
-    {
-
-    }
+        case(REDO):
+        {
+            
+        }
+        case(ADD_SPACE):
+        {
+            revertTo = previousState; 
+            break;
+        }
     }
 
-    if(revertTo != NULL)
+    rememberTextRow(&E.textRows[c_y], CURRENT_STATE); 
+    currentState = popUndoStack(); 
+
+    if(revertTo)
     {
         E.textRows[revertTo->rowNum].text = revertTo->text;
-        E.textRows[revertTo->rowNum].len = revertTo->len; 
+        E.textRows[revertTo->rowNum].len = revertTo->len;
+        c_x = revertTo->at; 
         updateRow(&E.textRows[revertTo->rowNum]);
-        if(c_y == revertTo->rowNum)
-        {
-            c_x = revertTo->at;
-        }
     }
-    push(E.redoStack, mostRecentState); 
+
+    pushRedoStack(currentState);
 }
 
-void redo() // this can only happen immediately after an undo
+void redo()
 {
-    if (peek(E.redoStack) == NULL)
-    {
-        return;
-    }
+    pastTextRow* undidState;
 
-    pastTextRow *popped = (pastTextRow *)pop(E.redoStack);
-    E.textRows[popped->rowNum].text = popped->text;
-    E.textRows[popped->rowNum].len = popped->len;
-    updateRow(&E.textRows[popped->rowNum]);
-    if (c_y == popped->rowNum)
+    if(!(undidState = pop(E.redoStack)))
     {
-        c_x = popped->len;
+        return; 
     }
-    popped->action = REDO;
-    push(E.undoStack, popped);
+    rememberTextRow(&E.textRows[undidState->rowNum], REDO);
+
+    E.textRows[undidState->rowNum].text = undidState->text;
+    E.textRows[undidState->rowNum].len = undidState->len;
+    if(c_y == undidState->rowNum)
+    {
+        c_x = undidState->len;
+    }
+    
+    updateRow(&E.textRows[undidState->rowNum]);
+    free(undidState);
 }

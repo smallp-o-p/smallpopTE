@@ -57,7 +57,7 @@ void clearStack(Stack *stack){
     }
     if(stack->top != -1){
         void* popped;
-        while((popped = pop(stack)) != NULL){
+        while(popped = pop(stack)){
             free(popped);
         }
     } 
@@ -70,7 +70,7 @@ void cleanupStack(Stack *stack)
     }
     if(stack->top != -1){
         void* popped; 
-        while((popped = pop(stack)) != NULL){
+        while(popped = pop(stack)){
             free(popped);
         }
         free(stack->data);

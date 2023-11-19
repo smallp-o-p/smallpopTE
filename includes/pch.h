@@ -47,6 +47,7 @@ typedef struct rowOfText{
 } tRow;  
 
 typedef enum actions{
+    INITIAL_STATE, 
     ADD_CHAR,
     ADD_SPACE,
     DEL_CHAR,
@@ -54,7 +55,7 @@ typedef enum actions{
     DEL_LINE,
     BACKSPACE_CHAR,
     BACKSPACE_WORD, 
-    UNDO_TEMP, 
+    CURRENT_STATE, 
     REDO,
 }actionType;
 
