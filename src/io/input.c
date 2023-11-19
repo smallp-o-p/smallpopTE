@@ -41,6 +41,7 @@ void processKey()
     writeToFile(NULL);
     break;
   case (10): // enter;
+    rememberTextRow(&E.textRows[c_y], NEWLINE);
     insertNewLine();
     break;
     case CTRL_MACRO('f'):
@@ -53,21 +54,23 @@ void processKey()
     redo();
     break;
   case CTRL_BACKSPACE:
+    rememberTextRow(&E.textRows[c_y], DEL);
     backspaceWord(c_x, &E.textRows[c_y]);
     break;
   case (KEY_DC):
+    rememberTextRow(&E.textRows[c_y], DEL);
     delChar(c_x, DELETE);
     break;
   case CTRL_DELETE:
-
+    rememberTextRow(&E.textRows[c_y], DEL);
     deleteWord(c_x, &E.textRows[c_y]);
     break; 
   case CTRL_SHIFT_DELETE:
-
+    rememberTextRow(&E.textRows[c_y], DEL);
     clrRightOfCursor(c_x, &E.textRows[c_y]); 
     break; 
   case KEY_BACKSPACE:
-
+    rememberTextRow(&E.textRows[c_y], DEL);
     delChar(c_x, KEY_BACKSPACE);
     break;
   case (KEY_PPAGE):

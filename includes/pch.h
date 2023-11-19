@@ -50,13 +50,11 @@ typedef enum actions{
     INITIAL_STATE, 
     ADD_CHAR,
     ADD_SPACE,
-    DEL_CHAR,
-    DEL_WORD,
-    DEL_LINE,
-    BACKSPACE_CHAR,
-    BACKSPACE_WORD, 
+    DEL,
+    NEWLINE,
     CURRENT_STATE, 
     REDO,
+    REDO_FROM_NEWLINE
 }actionType;
 
 typedef struct softDeletedRowOfText{
