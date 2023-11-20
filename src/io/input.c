@@ -41,10 +41,13 @@ void processKey()
     writeToFile(NULL);
     break;
   case (10): // enter;
-    rememberTextRow(&E.textRows[c_y], NEWLINE);
-    insertNewLine();
+    {
+      uint32_t temp[2] = {c_y, c_y+1}; // can only affect two lines at a time
+      rememberRows(temp, 2, NEWLINE); 
+      insertNewLine();
+    }
     break;
-    case CTRL_MACRO('f'):
+  case CTRL_MACRO('f'):
     findString();
     break; 
   case CTRL_MACRO('z'):
@@ -54,23 +57,18 @@ void processKey()
     redo();
     break;
   case CTRL_BACKSPACE:
-    rememberTextRow(&E.textRows[c_y], DEL);
     backspaceWord(c_x, &E.textRows[c_y]);
     break;
   case (KEY_DC):
-    rememberTextRow(&E.textRows[c_y], DEL);
     delChar(c_x, DELETE);
     break;
   case CTRL_DELETE:
-    rememberTextRow(&E.textRows[c_y], DEL);
     deleteWord(c_x, &E.textRows[c_y]);
     break; 
   case CTRL_SHIFT_DELETE:
-    rememberTextRow(&E.textRows[c_y], DEL);
     clrRightOfCursor(c_x, &E.textRows[c_y]); 
     break; 
   case KEY_BACKSPACE:
-    rememberTextRow(&E.textRows[c_y], DEL);
     delChar(c_x, KEY_BACKSPACE);
     break;
   case (KEY_PPAGE):
@@ -108,13 +106,9 @@ void processKey()
     break;
   default:
     if(!iscntrl(c)){
-      if(!peek(E.undoStack))
-      {
-        rememberTextRow(NULL, INITIAL_STATE);
-      }
       if(c == ' ')
       {
-        rememberTextRow(&E.textRows[c_y], ADD_SPACE); 
+        rememberRows(&c_y, 1, INSERT);
       }
       insertChar(c);
       clearStack(E.redoStack);
@@ -287,10 +281,4 @@ void insertNewLine()
   }
   c_y++;
   c_x = 0;
-}
-
-void copyText(int c)
-{
-  E.cvBuf.copied = c;
-  E.cvBuf.len = 1;
 }

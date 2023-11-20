@@ -34,10 +34,6 @@ typedef enum syntaxTokenType{
     PUNCTUATOR
 } tokens; 
 
-struct copyBuffer{ // can copy only one character at a time
-    int len;
-    char copied; 
-};
 typedef struct rowOfText{
     int len; // length of string, length of array
     char* text; // raw text 
@@ -48,13 +44,11 @@ typedef struct rowOfText{
 
 typedef enum actions{
     INITIAL_STATE, 
-    ADD_CHAR,
-    ADD_SPACE,
-    DEL,
+    INSERT,
+    REMOVE,
     NEWLINE,
     CURRENT_STATE, 
     REDO,
-    REDO_FROM_NEWLINE
 }actionType;
 
 typedef struct softDeletedRowOfText{
@@ -62,9 +56,15 @@ typedef struct softDeletedRowOfText{
     int rowNum; 
     int at; 
     char* text;
-    time_t timestamp; 
-    actionType action; 
 } pastTextRow; 
+
+typedef struct pastTextRows{
+    pastTextRow** rows; 
+    uint32_t* rowIndexes; 
+    uint32_t numRows;   
+    time_t timestamp;
+    actionType action; 
+} rememberStruct; 
 
 struct terminalConfig{
     int cursor_x, cursor_y; 
@@ -77,8 +77,7 @@ struct terminalConfig{
     int colOffset; 
     int numRowsofText; 
     struct rowOfText* textRows; 
-    struct termios terminal;
-    struct copyBuffer cvBuf; 
+    struct termios terminal; 
     char* filename; 
     char statusmsg[80];
     msgType msgtype; 

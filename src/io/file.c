@@ -12,9 +12,10 @@
  */
 int openFile(char *filename)
 {
+    int linesRead = 0; 
     free(E.filename);
     E.filename = strdup(filename);
-    if (filename != NULL)
+    if (filename)
     {
         FILE *fp = fopen(filename, "r");
         if (!fp)
@@ -32,11 +33,12 @@ int openFile(char *filename)
                 lineLen--;
             }
             addRow(E.numRowsofText, line, lineLen);
+            linesRead++;
         }
         free(line);
         fclose(fp);
         E.dirty = 0;
-        return 0;
+        return linesRead;
     }
     return -1; 
 }

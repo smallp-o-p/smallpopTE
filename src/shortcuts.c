@@ -5,12 +5,12 @@
 #include "editorFeatures.h"
 #include "output.h"
 
-#define peekUndoStack() (pastTextRow *)peek(E.undoStack)
-#define popUndoStack() (pastTextRow *)pop(E.undoStack)
+#define peekUndoStack() (rememberStruct *)peek(E.undoStack)
+#define popUndoStack() (rememberStruct *)pop(E.undoStack)
 #define pushUndoStack(k) push(E.undoStack, k)
 
-#define peekRedoStack() (pastTextRow *)peek(E.redoStack)
-#define popRedoStack() (pastTextRow *)pop(E.redoStack)
+#define peekRedoStack() (rememberStruct *)peek(E.redoStack)
+#define popRedoStack() (rememberStruct *)pop(E.redoStack)
 #define pushRedoStack(k) push(E.redoStack, k) 
 
 int backspaceWord(int col, tRow *line)
@@ -88,98 +88,79 @@ void clrRightOfCursor(int col, tRow *line)
 
 void undo()
 {
-    pastTextRow* previousState;
-    pastTextRow* currentState; 
+    rememberStruct* previousState;
+    rememberStruct* currentState; 
 
-    if(!(previousState = popUndoStack()))
+    if(!(previousState = peekUndoStack()))
     {
         setStatusMessage(BAD, "Cannot undo further.");
         return; 
     }
-
-    if(previousState->action == INITIAL_STATE)
-    {
-        pushUndoStack(previousState);
-    }
-    else if(previousState->action == NEWLINE)
-    {
-        rememberTextRow(&E.textRows[previousState->rowNum], CURRENT_STATE);
-        currentState = popUndoStack(); 
-        currentState->rowNum = previousState->rowNum; 
-
-        rememberTextRow(&E.textRows[previousState->rowNum + 1], NEWLINE);
-        pastTextRow* tempRow = popUndoStack(); 
-        tempRow->rowNum = previousState->rowNum+1; 
-
-        pushRedoStack(tempRow);
-
-        removeRow((previousState->rowNum)+1);
-    }
-    else if(previousState->action == REDO_FROM_NEWLINE)
-    {
-        setStatusMessage(BAD, "Unsupported action: Undoing a redo that made a new line.");
-        return; 
-    }
     else
     {
-        rememberTextRow(&E.textRows[previousState->rowNum], CURRENT_STATE); 
-        currentState = popUndoStack(); 
+        previousState = popUndoStack(); 
     }
+    rememberRows(previousState->rowIndexes, previousState->numRows, CURRENT_STATE); 
 
-    if(previousState)
+    currentState = popUndoStack(); 
+    for(uint32_t i = 0; i<previousState->numRows; i++)
     {
-        E.textRows[previousState->rowNum].text = previousState->text;
-        E.textRows[previousState->rowNum].len = previousState->len;
-        if(previousState->rowNum == c_y)
+        if(previousState->rowIndexes[i] + 1 >= E.numRowsofText)
         {
-            c_x = previousState->at; 
+            if(previousState->rows[i]->text)
+            {
+                addRow(previousState->rowIndexes[i], previousState->rows[i]->text, previousState->rows[i]->len);
+                continue; 
+            }
+            else
+            {
+                removeRow(previousState->rowIndexes[i]); 
+                continue;
+            }
         }
         else
         {
-            c_y = previousState->rowNum;
-            c_x = previousState->at; 
+            E.textRows[previousState->rows[i]->rowNum].text = previousState->rows[i]->text; 
+            E.textRows[previousState->rows[i]->rowNum].len = previousState->rows[i]->len;
+            updateRow(&E.textRows[previousState->rows[i]->rowNum]);
         }
-        updateRow(&E.textRows[previousState->rowNum]);
     }
-    
+    c_y = previousState->rows[0]->rowNum; 
+    c_x = previousState->rows[0]->len; 
     pushRedoStack(currentState);
 }
 
 void redo()
 {
-    pastTextRow* undidState;
-    pastTextRow* nextLine; 
-    if(!(undidState = pop(E.redoStack)))
+    rememberStruct* toRedo = popRedoStack();
+    if(!toRedo)
     {
         setStatusMessage(BAD, "Cannot redo further.");
-        return; 
+        return;
     }
-    if((peekRedoStack())){
-        if((peekRedoStack())->action == NEWLINE)
+
+    rememberRows(toRedo->rowIndexes, toRedo->numRows, REDO);
+
+    for(uint32_t i = 0; i<toRedo->numRows; i++)
+    {
+        if(toRedo->rowIndexes[i] >= E.numRowsofText && toRedo->rows[i]->text)
         {
-            nextLine = popRedoStack(); 
-            addRow(nextLine->rowNum, nextLine->text, nextLine->len);
+            if(toRedo->rows[i]->text)
+            {
+                addRow(toRedo->rowIndexes[i], toRedo->rows[i]->text, toRedo->rows[i]->len);
+            }
+            else
+            {
+                removeRow(toRedo->rowIndexes[i]); 
+            }
+        }
+        else
+        {
+            E.textRows[toRedo->rows[i]->rowNum].text = toRedo->rows[i]->text;
+            E.textRows[toRedo->rows[i]->rowNum].len = toRedo->rows[i]->len;
+            updateRow(&E.textRows[toRedo->rows[i]->rowNum]);
         }
     }
-
-    rememberTextRow(&E.textRows[undidState->rowNum], REDO);
-
-    if(nextLine && nextLine->action == NEWLINE)
-    {
-        nextLine->action = REDO_FROM_NEWLINE; 
-        pushUndoStack(nextLine);
-    }
-
-    E.textRows[undidState->rowNum].text = undidState->text;
-    E.textRows[undidState->rowNum].len = undidState->len;
-    if(c_y == undidState->rowNum)
-    {
-        c_x = undidState->len;
-    }
-    
-    updateRow(&E.textRows[undidState->rowNum]);
-    if(nextLine && nextLine->action != NEWLINE)
-    {
-        free(nextLine);
-    }
+    c_y = toRedo->rows[0]->rowNum; 
+    c_x = toRedo->rows[0]->len; 
 }

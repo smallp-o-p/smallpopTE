@@ -27,7 +27,6 @@ void addRow(int at, char *str, size_t len)
     E.textRows[at].render = NULL;
 
     updateRow(&E.textRows[at]);
-
     E.numRowsofText++;
     E.dirty = true;
 }

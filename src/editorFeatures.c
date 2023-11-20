@@ -70,34 +70,40 @@ void findString()
     free(whatWasFound);
 }
 
-void rememberTextRow(tRow* row, actionType lastAction){
-    
-    pastTextRow* remember = malloc(sizeof(pastTextRow)); 
-
-    if(!row){ // null means initial state
-        if(!(&E.textRows[c_y])) // empty file
-        {
-            remember->text = NULL;
-            remember->len = 0; 
-        }
-        else{ // non-empty file
-            remember->text = malloc(sizeof(char) * E.textRows[c_y].len);
-            strncpy(remember->text, E.textRows[c_y].text, E.textRows[c_y].len);
-            remember->len = E.textRows[c_y].len;
-        } 
+void rememberRows(uint32_t* rowNumbers, uint32_t numRows, actionType lastAction)
+{   
+    if(numRows == 0 || !rowNumbers)
+    {
+        return; 
     }
-    else{
-        remember->text = malloc(sizeof(char) * row->len);
-        strncpy(remember->text, row->text, row->len);
-        remember->len = row->len;
-    } 
 
-    remember->at = c_x; 
-    remember->rowNum = c_y;
-    remember->timestamp = time(NULL); 
-    remember->action = lastAction; 
+    rememberStruct* iRemember = malloc(sizeof(rememberStruct)); 
+    iRemember->rows = malloc(sizeof(pastTextRow) * numRows);
+    iRemember->numRows = numRows; 
+    iRemember->rowIndexes = malloc(sizeof(uint32_t) * numRows); 
 
-    push(E.undoStack, (void*) remember); 
+    for(uint32_t i = 0; i<numRows; i++)
+    {
+        pastTextRow* ptr = malloc(sizeof(pastTextRow));
+        ptr->rowNum = rowNumbers[i];
+        if(rowNumbers[i] >= E.numRowsofText)
+        {
+            ptr->len = 0; 
+            ptr->text = NULL;
+        }
+        else
+        {
+            ptr->len = E.textRows[rowNumbers[i]].len; 
+            ptr->text = calloc(E.textRows[rowNumbers[i]].len, sizeof(char));
+            strncpy(ptr->text, E.textRows[rowNumbers[i]].text, E.textRows[rowNumbers[i]].len); 
+        }
+        iRemember->rowIndexes[i] = rowNumbers[i];
+        iRemember->rows[i] = ptr; 
+    }
+
+    iRemember->timestamp = time(NULL);
+    iRemember->action = lastAction; 
+    push(E.undoStack, (void*) iRemember);
 }
 
 void highlightKeywords(char *line)
