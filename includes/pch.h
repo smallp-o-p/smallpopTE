@@ -42,13 +42,18 @@ typedef struct rowOfText{
     char* highLighting; 
 } tRow;  
 
+typedef struct copyText{
+    uint32_t len;
+    char* text;
+} copyBuffer; 
+
 typedef enum actions{
     INITIAL_STATE, 
     INSERT,
     REMOVE,
     NEWLINE,
+    RM_NEWLINE, 
     CURRENT_STATE, 
-    REDO,
 }actionType;
 
 typedef struct softDeletedRowOfText{
@@ -84,6 +89,7 @@ struct terminalConfig{
     time_t statusmsg_time; 
     Stack* undoStack; 
     Stack* redoStack; 
+    copyBuffer cvBuf; 
 } extern E; 
 
 #define c_y E.cursor_y

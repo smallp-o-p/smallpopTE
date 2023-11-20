@@ -86,6 +86,39 @@ void clrRightOfCursor(int col, tRow *line)
     E.dirty = true;
 }
 
+void copy(tRow* line, uint32_t cx_upper, uint32_t cx_lower)
+{
+    int rangeToCopy; 
+    if(cx_upper == cx_lower)
+    {
+        rangeToCopy = 1; 
+    }
+    else
+    {
+        rangeToCopy = cx_upper - cx_lower; 
+    }
+    E.cvBuf.text = realloc(E.cvBuf.text, sizeof(char) * (rangeToCopy));
+    E.cvBuf.len = rangeToCopy; 
+    strncpy(E.cvBuf.text, line->text + (rangeToCopy == 1 ? c_x : cx_lower), (rangeToCopy));
+}
+
+void paste(tRow* line, uint32_t cx)
+{
+    line->text = realloc(line->text, sizeof(char) * (E.cvBuf.len + line->len));
+    memmove(line->text + cx + E.cvBuf.len - 1, line->text + cx, line->len - cx);
+    line->len = E.cvBuf.len + line->len;
+    memcpy(line->text + cx, E.cvBuf.text, E.cvBuf.len);
+    updateRow(line);
+}
+
+
+/**
+ * 
+ * 
+ * Cases: Add word : 1 line, delete word: 1 line, add newline : 2 lines, remove newline: 2 lines
+ *  
+ * 
+*/
 void undo()
 {
     rememberStruct* previousState;
@@ -100,26 +133,27 @@ void undo()
     {
         previousState = popUndoStack(); 
     }
-    rememberRows(previousState->rowIndexes, previousState->numRows, CURRENT_STATE); 
+    rememberRows(previousState->rowIndexes, previousState->numRows, previousState->action); 
 
     currentState = popUndoStack(); 
     for(uint32_t i = 0; i<previousState->numRows; i++)
     {
-        if(previousState->rowIndexes[i] + 1 >= E.numRowsofText)
+        if(previousState->numRows > 1 && i == previousState->numRows - 1)
         {
-            if(previousState->rows[i]->text)
-            {
-                addRow(previousState->rowIndexes[i], previousState->rows[i]->text, previousState->rows[i]->len);
-                continue; 
-            }
-            else
+            if(previousState->action == NEWLINE) // added a new line, so we must remove it
             {
                 removeRow(previousState->rowIndexes[i]); 
                 continue;
             }
+            else if(previousState->rows[i]->text) 
+            {
+                addRow(previousState->rowIndexes[i], previousState->rows[i]->text, previousState->rows[i]->len);
+                continue; 
+            }
         }
         else
         {
+            free(E.textRows[previousState->rows[i]->rowNum].text);
             E.textRows[previousState->rows[i]->rowNum].text = previousState->rows[i]->text; 
             E.textRows[previousState->rows[i]->rowNum].len = previousState->rows[i]->len;
             updateRow(&E.textRows[previousState->rows[i]->rowNum]);
@@ -138,20 +172,18 @@ void redo()
         setStatusMessage(BAD, "Cannot redo further.");
         return;
     }
-
-    rememberRows(toRedo->rowIndexes, toRedo->numRows, REDO);
-
+    else
+    {
+        rememberRows(toRedo->rowIndexes, toRedo->numRows, toRedo->action); // push the same action so the undo() function knows how to handle it
+    }
+    
     for(uint32_t i = 0; i<toRedo->numRows; i++)
     {
-        if(toRedo->rowIndexes[i] >= E.numRowsofText && toRedo->rows[i]->text)
+        if(i > 0)
         {
-            if(toRedo->rows[i]->text)
+            if(toRedo->action == NEWLINE) // we undid a newline, so we must add the row back and restore its text
             {
                 addRow(toRedo->rowIndexes[i], toRedo->rows[i]->text, toRedo->rows[i]->len);
-            }
-            else
-            {
-                removeRow(toRedo->rowIndexes[i]); 
             }
         }
         else

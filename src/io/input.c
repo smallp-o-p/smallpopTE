@@ -56,6 +56,12 @@ void processKey()
   case(CTRL_MACRO('y')):
     redo();
     break;
+  case(CTRL_MACRO('c')):
+    copy(&E.textRows[c_y], E.cx_upper, E.cx_lower); 
+    break; 
+  case(CTRL_MACRO('v')):
+    paste(&E.textRows[c_y], c_x);
+    break; 
   case CTRL_BACKSPACE:
     backspaceWord(c_x, &E.textRows[c_y]);
     break;
@@ -63,6 +69,7 @@ void processKey()
     delChar(c_x, DELETE);
     break;
   case CTRL_DELETE:
+    rememberRows(&c_y, 1, DELETE);
     deleteWord(c_x, &E.textRows[c_y]);
     break; 
   case CTRL_SHIFT_DELETE:
@@ -93,7 +100,13 @@ void processKey()
     }
   }
   break;
-  case CTRL_MACRO('l'):
+  case CTRL_MACRO('l'): // select line
+  {
+    E.cx_upper = E.textRows[c_y].len;
+    E.cx_lower = 0;
+    c_x = E.textRows[c_y].len; 
+    break;  
+  }
   case '\x1b':
     break;
   case (KEY_HOME):
@@ -114,6 +127,11 @@ void processKey()
       clearStack(E.redoStack);
     } 
     break;
+  }
+  if(c != CTRL_MACRO('l'))
+  {
+    E.cx_upper = 0;
+    E.cx_lower = 0;
   }
 }
 

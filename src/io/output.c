@@ -38,6 +38,7 @@ void drawRows(char c, struct dynamic_text_buffer *buf)
     for (int y = 0; y < E.rows-2; y++)
     {
         int filerow = y + E.rowOffset;
+
         if (filerow >= E.numRowsofText)
         {
             printw("%c\n", c);
@@ -55,7 +56,16 @@ void drawRows(char c, struct dynamic_text_buffer *buf)
                 len = E.cols;
             }
             char* line = &E.textRows[filerow].render[E.colOffset];
-            printw("%s\n", line);
+            if(filerow == c_y && E.cx_upper > E.cx_lower)
+            {
+                attron(A_REVERSE);
+                printw("%s\n", line);
+                attroff(A_REVERSE); 
+            }
+            else
+            {
+                printw("%s\n", line);
+            }
         }
     }
 }
