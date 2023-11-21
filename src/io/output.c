@@ -12,17 +12,13 @@
 
 #define CLEAR_LINE "\x1b[K"
 
-
-
 void refreshScreen()
 {
     scrollHandler();
-    struct dynamic_text_buffer dbuf = {NULL, 0};
     erase(); 
-    drawRows('-', &dbuf);
-    drawStatusBar(&dbuf);
-    drawStatusMessage(&dbuf);
-    //free((&dbuf)->buf);
+    drawRows('-');
+    drawStatusBar();
+    drawStatusMessage();
     move(E.cursor_y, E.cursor_x);
     refresh(); 
 }
@@ -33,7 +29,7 @@ void clearScreen()
     write(STDOUT_FILENO, "\x1b[H", 3);
 }
 
-void drawRows(char c, struct dynamic_text_buffer *buf)
+void drawRows(char c)
 {
     for (int y = 0; y < E.rows-2; y++)
     {
@@ -95,7 +91,7 @@ void scrollHandler()
     }
 }
 
-void drawStatusBar(struct dynamic_text_buffer *buf)
+void drawStatusBar()
 {
     attron(A_BOLD | A_REVERSE); 
     char statusText[80], rstatus[80];
@@ -142,7 +138,7 @@ void setStatusMessage(msgType type, const char *stat,  ...)
     E.statusmsg_time = time(NULL);
 }
 
-void drawStatusMessage(struct dynamic_text_buffer *buf)
+void drawStatusMessage()
 {
     int len = strlen(E.statusmsg);
     if (len > E.cols)

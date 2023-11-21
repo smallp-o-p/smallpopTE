@@ -3,6 +3,8 @@
 #include "input.h"
 #include "terminal.h"
 #include "output.h"
+#include "shortcuts.h"
+#include "row.h"
 
 /* I am honestly so proud of doing this. */
 void findString()
@@ -17,7 +19,7 @@ void findString()
         return;
     }
     int count = 0;
-    foundPair* whatWasFound = searchSubstr(needle, &count);
+    foundPair *whatWasFound = searchSubstr(needle, &count);
     if (count == 0 && whatWasFound == NULL)
     {
         setStatusMessage(CONCERNING, "No matches found.");
@@ -70,40 +72,100 @@ void findString()
     free(whatWasFound);
 }
 
-void rememberRows(uint32_t* rowNumbers, uint32_t numRows, actionType lastAction)
-{   
-    if(numRows == 0 || !rowNumbers)
+void removeNewLines(rememberStruct* previousState)
+{
+    for(uint32_t i = 0; i<previousState->numRows; i++)
     {
-        return; 
+        if(i > 0)
+        {
+            removeRow(previousState->rowIndexes[i]);
+        }
+        else
+        {
+            updateRowInternalText(previousState->rowIndexes[i], previousState->rows[i]->text, previousState->rows[i]->len);
+            updateRow(&E.textRows[previousState->rowIndexes[i]]);
+        }
+    }
+}
+
+void restoreNewLines(rememberStruct* previousState)
+{
+    for(uint32_t i = 0; i<previousState->numRows; i++)
+    {
+        if(i > 0)
+        {
+            addRow(previousState->rowIndexes[i], previousState->rows[i]->text, previousState->rows[i]->len);
+        }
+        else
+        {
+            updateRowInternalText(previousState->rowIndexes[i], previousState->rows[i]->text, previousState->rows[i]->len);
+            updateRow(&E.textRows[previousState->rowIndexes[i]]);
+        }
+        
+    }
+}
+
+void undoInsertionDeletion(rememberStruct* previousState)
+{
+    if(previousState->numRows != 1)
+    {
+        return;
     }
 
-    rememberStruct* iRemember = malloc(sizeof(rememberStruct)); 
-    iRemember->rows = malloc(sizeof(pastTextRow) * numRows);
-    iRemember->numRows = numRows; 
-    iRemember->rowIndexes = malloc(sizeof(uint32_t) * numRows); 
+    free(E.textRows[previousState->rows[0]->rowNum].text);
 
-    for(uint32_t i = 0; i<numRows; i++)
+    updateRowInternalText(previousState->rows[0]->rowNum, previousState->rows[0]->text, previousState->rows[0]->len);
+    updateRow(&E.textRows[previousState->rows[0]->rowNum]);
+}
+
+void rememberRows(uint32_t *rowNumbers, uint32_t numRows, actionType lastAction)
+{
+    if (numRows == 0 || !rowNumbers)
     {
-        pastTextRow* ptr = malloc(sizeof(pastTextRow));
+        return;
+    }
+
+    rememberStruct *iRemember = malloc(sizeof(rememberStruct));
+    iRemember->rows = malloc(sizeof(pastTextRow) * numRows);
+    iRemember->numRows = numRows;
+    iRemember->rowIndexes = malloc(sizeof(uint32_t) * numRows);
+
+    switch (lastAction)
+    {
+    case (INSERT):
+    case (DELETE):
+        iRemember->howtoUndoMe = &undoInsertionDeletion; 
+        break;
+    case (NEWLINE):
+        iRemember->howtoUndoMe = &removeNewLines;
+        break;
+    case (RM_NEWLINE):
+        iRemember->howtoUndoMe = &restoreNewLines; 
+        break;
+    }
+    iRemember->action = lastAction; 
+
+    for (uint32_t i = 0; i < numRows; i++)
+    {
+        pastTextRow *ptr = malloc(sizeof(pastTextRow));
         ptr->rowNum = rowNumbers[i];
-        if(rowNumbers[i] >= E.numRowsofText)
+        if (rowNumbers[i] >= E.numRowsofText)
         {
-            ptr->len = 0; 
+            ptr->len = 0;
             ptr->text = NULL;
         }
         else
         {
-            ptr->len = E.textRows[rowNumbers[i]].len; 
+            ptr->len = E.textRows[rowNumbers[i]].len;
             ptr->text = calloc(E.textRows[rowNumbers[i]].len, sizeof(char));
-            strncpy(ptr->text, E.textRows[rowNumbers[i]].text, E.textRows[rowNumbers[i]].len); 
+            strncpy(ptr->text, E.textRows[rowNumbers[i]].text, E.textRows[rowNumbers[i]].len);
         }
         iRemember->rowIndexes[i] = rowNumbers[i];
-        iRemember->rows[i] = ptr; 
+        iRemember->rows[i] = ptr;
     }
 
     iRemember->timestamp = time(NULL);
-    iRemember->action = lastAction; 
-    push(E.undoStack, (void*) iRemember);
+    push(E.undoStack, (void *)iRemember);
 }
 
 void highlightKeywords(char *line)

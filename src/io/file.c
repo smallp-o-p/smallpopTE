@@ -46,9 +46,9 @@ int openFile(char *filename)
 int writeToFile(char *fileName)
 {
     FILE* fp = NULL; 
-    if(fileName == NULL){
+    if(!fileName){
         fileName = makePrompt("Save as ([esc] to cancel): %s");
-        if(fileName == NULL){
+        if(!fileName){
             return 0;
         } 
         fp = fopen(fileName, "w+");
@@ -63,7 +63,7 @@ int writeToFile(char *fileName)
 
     int length; 
     char* toWrite = rowsToCharBuffer(&length, E.textRows, E.numRowsofText);
-    if(toWrite != NULL)
+    if(toWrite)
     {
         ftruncate(fileno(fp), length);
         fwrite(toWrite, sizeof(char), length, fp);

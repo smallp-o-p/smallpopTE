@@ -9,11 +9,9 @@ void insertChar(int c);
 void delChar(int col, int op);
 void delCharInRow(int op, struct rowOfText* row, int col); 
 void appendRowText(struct rowOfText*, char* str, int len);
-struct foundPair{
-    int row;
-    int col; 
-};
+void updateRowInternalText(uint32_t rowNum, char *text, uint32_t len);
 
-typedef struct foundPair foundPair; 
+
+
 
 foundPair* searchSubstr(char* needle, int* countToUpdate); 

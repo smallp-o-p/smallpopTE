@@ -267,21 +267,6 @@ void moveCursor(int direction)
   }
 }
 
-void append2Buffer(struct dynamic_text_buffer *buf, char *str, int addedLen)
-{
-  char *new = realloc(buf->buf, buf->len + addedLen);
-  if (new == NULL)
-  {
-    return;
-  }
-  else
-  {
-    memcpy(&new[buf->len], str, addedLen);
-    buf->buf = new;
-    buf->len += addedLen;
-  }
-}
-
 void insertNewLine()
 {
   if (c_x == 0)

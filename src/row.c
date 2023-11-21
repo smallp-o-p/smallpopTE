@@ -9,9 +9,9 @@
 
 void addRow(int at, char *str, size_t len)
 {
-    if(at < 0 || at > E.numRowsofText)
+    if (at < 0 || at > E.numRowsofText)
     {
-        return; 
+        return;
     }
     // make space for a new row of text
     // move everything below the row pointed to by at down 1
@@ -63,13 +63,14 @@ void updateRow(struct rowOfText *row)
     row->renderSize = idx;
 }
 
-void appendRowText(struct rowOfText* row, char* str, int len){
+void appendRowText(struct rowOfText *row, char *str, int len)
+{
     row->text = realloc(row->text, row->len + len + 1);
     memcpy(row->text + row->len, str, len);
-    row->len += len; 
+    row->len += len;
     row->text[row->len] = '\0';
     updateRow(row);
-    E.dirty = true; 
+    E.dirty = true;
 }
 
 void moveRowText(struct rowOfText *from, struct rowOfText *to)
@@ -81,11 +82,12 @@ void moveRowText(struct rowOfText *from, struct rowOfText *to)
 }
 
 void removeRow(int row)
-{ 
-    if (row < 0 || row >= E.numRowsofText) return;
+{
+    if (row < 0 || row >= E.numRowsofText)
+        return;
     free(E.textRows[row].render);
     free(E.textRows[row].text);
-    memmove(&E.textRows[row], &E.textRows[row+1], sizeof(struct rowOfText)*(E.numRowsofText - row - 1));
+    memmove(&E.textRows[row], &E.textRows[row + 1], sizeof(struct rowOfText) * (E.numRowsofText - row - 1));
     E.numRowsofText--;
     E.dirty = true;
 }
@@ -131,8 +133,9 @@ void insertCharInRow(int c, struct rowOfText *row, int col)
 
 void delChar(int col, int op)
 {
-    if((E.cursor_y == E.numRowsofText && op == KEY_BACKSPACE) || (E.cursor_x == 0 && E.cursor_y == 0)){
-        return; 
+    if ((E.cursor_y == E.numRowsofText && op == KEY_BACKSPACE) || (E.cursor_x == 0 && E.cursor_y == 0))
+    {
+        return;
     }
     struct rowOfText *tRow = &E.textRows[E.cursor_y];
     delCharInRow(op, tRow, col);
@@ -143,10 +146,10 @@ void delCharInRow(int op, struct rowOfText *row, int col) // this seems to work 
     switch (op) // no need to call realloc since it's kind of a waste of time to reduce a block by one byte only
     {
     case (KEY_DC): // delete character underneath the cursor
-        if(col == row->len)
+        if (col == row->len)
         {
-            appendRowText(row, (row+1)->text, (row+1)->len);
-            removeRow(E.cursor_y+1);
+            appendRowText(row, (row + 1)->text, (row + 1)->len);
+            removeRow(E.cursor_y + 1);
             break;
         }
         else
@@ -161,13 +164,14 @@ void delCharInRow(int op, struct rowOfText *row, int col) // this seems to work 
     case (KEY_BACKSPACE): // delete character to the left of cursor
         if (col == 0)
         {
-            E.cursor_x = E.textRows[E.cursor_y-1].len;
-            appendRowText(row-1, row->text, row->len);
+            E.cursor_x = E.textRows[E.cursor_y - 1].len;
+            appendRowText(row - 1, row->text, row->len);
             removeRow(E.cursor_y);
             E.cursor_y--;
             break;
         }
-        else{
+        else
+        {
             // copy everything on the cursor position and everything to the right, and move it one to the left
             memmove(row->text + (col - 1), row->text + (col), row->len - (col));
             memset(row->text + (row->len - 1), '\0', 1); // remove trailing character that doesn't get deleted when we memmove
@@ -176,39 +180,51 @@ void delCharInRow(int op, struct rowOfText *row, int col) // this seems to work 
             moveCursor(KEY_LEFT); // follow along :D
             break;
         }
-
     }
     E.dirty = true;
 }
 
-foundPair* searchSubstr(char* needle, int* countToUpdate){
+foundPair *searchSubstr(char *needle, int *countToUpdate)
+{
     setStatusMessage(NORMAL, "Searching for: %s...", needle);
     refreshScreen();
-    
-    int foundPairLen = 5; 
-    foundPair* pairs = malloc(sizeof(foundPair) * foundPairLen); 
-    int needleLen = strlen(needle);
-    int count = 0; 
 
-    for(int i = 0; i<E.numRowsofText; i++){
-        char* haystack = E.textRows[i].text; 
-        char* temp = haystack; 
-        while((temp = strstr(temp, needle)) != NULL){
-            foundPair found = {i, (int) (temp-haystack)};
-            if(count == foundPairLen){
+    int foundPairLen = 5;
+    foundPair *pairs = malloc(sizeof(foundPair) * foundPairLen);
+    int needleLen = strlen(needle);
+    int count = 0;
+
+    for (int i = 0; i < E.numRowsofText; i++)
+    {
+        char *haystack = E.textRows[i].text;
+        char *temp = haystack;
+        while ((temp = strstr(temp, needle)))
+        {
+            foundPair found = {i, (int)(temp - haystack)};
+            if (count == foundPairLen)
+            {
                 pairs = realloc(pairs, sizeof(foundPair) * (foundPairLen *= 2));
             }
-            pairs[count++] = found;   
-            temp+= needleLen; 
+            pairs[count++] = found;
+            temp += needleLen;
         }
     }
-    if(count == 0){
+    if (count == 0)
+    {
         *countToUpdate = 0;
         free(pairs);
-        return NULL; 
+        return NULL;
     }
-    else{
-        *countToUpdate = count; 
-        return pairs; 
+    else
+    {
+        *countToUpdate = count;
+        return pairs;
     }
+}
+
+void updateRowInternalText(uint32_t rowNum, char *text, uint32_t len) // i got tired of doing this all the time
+{
+    free(E.textRows[rowNum].text); 
+    E.textRows[rowNum].text = text;
+    E.textRows[rowNum].len = len;
 }

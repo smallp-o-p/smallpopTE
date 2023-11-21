@@ -15,9 +15,8 @@ void init_editor()
     E.textRows = NULL;
     E.rowOffset = 0;
     E.filename = NULL;
-    E.statusmsg[0] = '\0';
+    memset(E.statusmsg, '\0', sizeof(E.statusmsg));
     E.undoStack = initStack();
-    
     E.redoStack = initStack(); 
     E.statusmsg_time = 0;
     

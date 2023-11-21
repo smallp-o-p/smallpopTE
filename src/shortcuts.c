@@ -111,6 +111,23 @@ void paste(tRow* line, uint32_t cx)
     updateRow(line);
 }
 
+actionType getInverseAction(actionType action)
+{   
+    switch(action)
+    {
+        case(DELETE):
+            return INSERT;
+        case(INSERT):
+            return DELETE;
+        case(NEWLINE):
+            return RM_NEWLINE;
+        case(RM_NEWLINE):
+            return NEWLINE;
+        default:
+            return CURRENT_STATE;
+    }
+}
+
 
 /**
  * 
@@ -121,47 +138,22 @@ void paste(tRow* line, uint32_t cx)
 */
 void undo()
 {
-    rememberStruct* previousState;
-    rememberStruct* currentState; 
+    rememberStruct* previousState = popUndoStack();
 
-    if(!(previousState = peekUndoStack()))
+    if(!previousState)
     {
         setStatusMessage(BAD, "Cannot undo further.");
         return; 
     }
-    else
-    {
-        previousState = popUndoStack(); 
-    }
-    rememberRows(previousState->rowIndexes, previousState->numRows, previousState->action); 
 
-    currentState = popUndoStack(); 
-    for(uint32_t i = 0; i<previousState->numRows; i++)
-    {
-        if(previousState->numRows > 1 && i == previousState->numRows - 1)
-        {
-            if(previousState->action == NEWLINE) // added a new line, so we must remove it
-            {
-                removeRow(previousState->rowIndexes[i]); 
-                continue;
-            }
-            else if(previousState->rows[i]->text) 
-            {
-                addRow(previousState->rowIndexes[i], previousState->rows[i]->text, previousState->rows[i]->len);
-                continue; 
-            }
-        }
-        else
-        {
-            free(E.textRows[previousState->rows[i]->rowNum].text);
-            E.textRows[previousState->rows[i]->rowNum].text = previousState->rows[i]->text; 
-            E.textRows[previousState->rows[i]->rowNum].len = previousState->rows[i]->len;
-            updateRow(&E.textRows[previousState->rows[i]->rowNum]);
-        }
-    }
+    rememberRows(previousState->rowIndexes, previousState->numRows, getInverseAction(previousState->action)); 
+
+    pushRedoStack(popUndoStack());
+
+    previousState->howtoUndoMe(previousState); 
+
     c_y = previousState->rows[0]->rowNum; 
     c_x = previousState->rows[0]->len; 
-    pushRedoStack(currentState);
 }
 
 void redo()
@@ -172,27 +164,10 @@ void redo()
         setStatusMessage(BAD, "Cannot redo further.");
         return;
     }
-    else
-    {
-        rememberRows(toRedo->rowIndexes, toRedo->numRows, toRedo->action); // push the same action so the undo() function knows how to handle it
-    }
+
+    rememberRows(toRedo->rowIndexes, toRedo->numRows, getInverseAction(toRedo->action));
     
-    for(uint32_t i = 0; i<toRedo->numRows; i++)
-    {
-        if(i > 0)
-        {
-            if(toRedo->action == NEWLINE) // we undid a newline, so we must add the row back and restore its text
-            {
-                addRow(toRedo->rowIndexes[i], toRedo->rows[i]->text, toRedo->rows[i]->len);
-            }
-        }
-        else
-        {
-            E.textRows[toRedo->rows[i]->rowNum].text = toRedo->rows[i]->text;
-            E.textRows[toRedo->rows[i]->rowNum].len = toRedo->rows[i]->len;
-            updateRow(&E.textRows[toRedo->rows[i]->rowNum]);
-        }
-    }
+    toRedo->howtoUndoMe(toRedo); 
     c_y = toRedo->rows[0]->rowNum; 
     c_x = toRedo->rows[0]->len; 
 }
