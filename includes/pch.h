@@ -43,7 +43,7 @@ typedef struct foundPairN{
 struct terminalConfig{
     int cursor_x, cursor_y; 
     int render_x; 
-    int cx_lower, cx_upper; 
+    int cx_rightmost, cx_leftmost; 
     int rows;
     int rowOffset;
     int cols; 

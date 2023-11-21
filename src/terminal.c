@@ -14,7 +14,7 @@ void initTerminal()
     initscr(); 
     raw(); 
     noecho(); 
-    keypad(stdscr, true); 
+    keypad(stdscr, TRUE); 
     if(has_colors()){
         initColors(); 
     }

@@ -14,15 +14,15 @@
 
 void processKey()
 {
-  int c = getch(); 
+  int c = getch();
   switch (c)
   {
   case 0:
     return;
   case (KEY_RESIZE):
     getmaxyx(stdscr, E.rows, E.cols);
-    refreshScreen(); 
-    break; 
+    refreshScreen();
+    break;
   case (CTRL_MACRO('q')):
     if (E.dirty)
     {
@@ -41,27 +41,27 @@ void processKey()
     writeToFile(NULL);
     break;
   case (10): // enter;
-    {
-      uint32_t temp[2] = {c_y, c_y+1}; // can only affect two lines at a time
-      rememberRows(temp, 2, NEWLINE); 
-      insertNewLine();
-    }
-    break;
+  {
+    uint32_t temp[2] = {c_y, c_y + 1}; // can only affect two lines at a time
+    rememberRows(temp, 2, NEWLINE);
+    insertNewLine();
+  }
+  break;
   case CTRL_MACRO('f'):
     findString();
-    break; 
+    break;
   case CTRL_MACRO('z'):
     undo();
     break;
-  case(CTRL_MACRO('y')):
+  case (CTRL_MACRO('y')):
     redo();
     break;
-  case(CTRL_MACRO('c')):
-    copy(&E.textRows[c_y], E.cx_upper, E.cx_lower); 
-    break; 
-  case(CTRL_MACRO('v')):
+  case (CTRL_MACRO('c')):
+    copy(&E.textRows[c_y], E.cx_leftmost, E.cx_rightmost);
+    break;
+  case (CTRL_MACRO('v')):
     paste(&E.textRows[c_y], c_x);
-    break; 
+    break;
   case CTRL_BACKSPACE:
     backspaceWord(c_x, &E.textRows[c_y]);
     break;
@@ -71,10 +71,10 @@ void processKey()
   case CTRL_DELETE:
     rememberRows(&c_y, 1, DELETE);
     deleteWord(c_x, &E.textRows[c_y]);
-    break; 
+    break;
   case CTRL_SHIFT_DELETE:
-    clrRightOfCursor(c_x, &E.textRows[c_y]); 
-    break; 
+    clrRightOfCursor(c_x, &E.textRows[c_y]);
+    break;
   case KEY_BACKSPACE:
     delChar(c_x, KEY_BACKSPACE);
     break;
@@ -102,13 +102,33 @@ void processKey()
   break;
   case CTRL_MACRO('l'): // select line
   {
-    E.cx_upper = E.textRows[c_y].len;
-    E.cx_lower = 0;
-    c_x = E.textRows[c_y].len; 
-    break;  
+    E.cx_leftmost = 0; // poor naming on this one
+    E.cx_rightmost = E.textRows[c_y].len;
+    c_x = E.textRows[c_y].len;
+    break;
   }
   case '\x1b':
     break;
+  case (KEY_SLEFT):
+    moveCursor(KEY_LEFT);
+    if (E.cx_rightmost > E.cx_leftmost)
+    {
+      E.cx_rightmost--;
+    }
+    else
+    {
+      E.cx_leftmost--;
+    }
+    
+    break; 
+  case (KEY_SRIGHT):
+    moveCursor(KEY_RIGHT);
+    if (E.cx_rightmost < E.textRows[c_y].len)
+    {
+      E.cx_rightmost++;
+    }
+    
+    break; 
   case (KEY_HOME):
   case (KEY_END):
   case (KEY_UP):
@@ -118,20 +138,21 @@ void processKey()
     moveCursor(c);
     break;
   default:
-    if(!iscntrl(c)){
-      if(c == ' ')
+    if (!iscntrl(c))
+    {
+      if (c == ' ')
       {
         rememberRows(&c_y, 1, INSERT);
       }
       insertChar(c);
       clearStack(E.redoStack);
-    } 
+    }
     break;
   }
-  if(c != CTRL_MACRO('l'))
+  if (c != CTRL_MACRO('l') && c != KEY_SRIGHT && c != KEY_SLEFT)
   {
-    E.cx_upper = 0;
-    E.cx_lower = 0;
+    E.cx_leftmost = c_x;
+    E.cx_rightmost = c_x;
   }
 }
 
@@ -142,7 +163,7 @@ void exitConfirm()
   int a;
   do
   {
-    a = readKey();
+    a = getch();
     switch (a)
     {
     case ('y'):

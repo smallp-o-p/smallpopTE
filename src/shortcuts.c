@@ -86,20 +86,20 @@ void clrRightOfCursor(int col, tRow *line)
     E.dirty = true;
 }
 
-void copy(tRow* line, uint32_t cx_upper, uint32_t cx_lower)
+void copy(tRow* line, uint32_t cx_leftmost, uint32_t cx_rightmost)
 {
     int rangeToCopy; 
-    if(cx_upper == cx_lower)
+    if(cx_leftmost == cx_rightmost)
     {
         rangeToCopy = 1; 
     }
     else
     {
-        rangeToCopy = cx_upper - cx_lower; 
+        rangeToCopy = cx_leftmost - cx_rightmost; 
     }
     E.cvBuf.text = realloc(E.cvBuf.text, sizeof(char) * (rangeToCopy));
     E.cvBuf.len = rangeToCopy; 
-    strncpy(E.cvBuf.text, line->text + (rangeToCopy == 1 ? c_x : cx_lower), (rangeToCopy));
+    strncpy(E.cvBuf.text, line->text + (rangeToCopy == 1 ? c_x : cx_rightmost), (rangeToCopy));
 }
 
 void paste(tRow* line, uint32_t cx)

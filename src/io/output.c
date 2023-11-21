@@ -52,11 +52,14 @@ void drawRows(char c)
                 len = E.cols;
             }
             char* line = &E.textRows[filerow].render[E.colOffset];
-            if(filerow == c_y && E.cx_upper > E.cx_lower)
+            if(filerow == c_y && E.cx_leftmost != E.cx_rightmost)
             {
+                addnstr(line, E.cx_leftmost);
                 attron(A_REVERSE);
-                printw("%s\n", line);
-                attroff(A_REVERSE); 
+                addnstr(line + E.cx_leftmost, E.cx_rightmost - E.cx_leftmost);
+                attroff(A_REVERSE);
+
+                printw("%s\n", line+E.cx_rightmost);
             }
             else
             {
