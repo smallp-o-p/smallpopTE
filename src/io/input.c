@@ -111,13 +111,9 @@ void processKey()
     break;
   case (KEY_SLEFT):
     moveCursor(KEY_LEFT);
-    if (E.cx_rightmost > E.cx_leftmost)
+    if (E.cx_leftmost > 0)
     {
-      E.cx_rightmost--;
-    }
-    else
-    {
-      E.cx_leftmost--;
+      E.cx_leftmost = c_x;
     }
     
     break; 
@@ -125,7 +121,7 @@ void processKey()
     moveCursor(KEY_RIGHT);
     if (E.cx_rightmost < E.textRows[c_y].len)
     {
-      E.cx_rightmost++;
+      E.cx_rightmost = c_x;
     }
     
     break; 

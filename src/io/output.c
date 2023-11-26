@@ -56,10 +56,9 @@ void drawRows(char c)
             {
                 addnstr(line, E.cx_leftmost);
                 attron(A_REVERSE);
-                addnstr(line + E.cx_leftmost, E.cx_rightmost - E.cx_leftmost);
+                addnstr(line + E.cx_leftmost, (E.cx_rightmost - E.cx_leftmost) + 1);
                 attroff(A_REVERSE);
-
-                printw("%s\n", line+E.cx_rightmost);
+                printw("%s\n", line + E.cx_rightmost + 1);
             }
             else
             {

@@ -95,20 +95,26 @@ void copy(tRow* line, uint32_t cx_leftmost, uint32_t cx_rightmost)
     }
     else
     {
-        rangeToCopy = cx_leftmost - cx_rightmost; 
+        rangeToCopy = cx_rightmost - cx_leftmost + 1; 
     }
     E.cvBuf.text = realloc(E.cvBuf.text, sizeof(char) * (rangeToCopy));
     E.cvBuf.len = rangeToCopy; 
-    strncpy(E.cvBuf.text, line->text + (rangeToCopy == 1 ? c_x : cx_rightmost), (rangeToCopy));
+    strncpy(E.cvBuf.text, line->text + (rangeToCopy == 1 ? c_x : cx_leftmost), (rangeToCopy));
 }
 
 void paste(tRow* line, uint32_t cx)
 {
-    line->text = realloc(line->text, sizeof(char) * (E.cvBuf.len + line->len));
-    memmove(line->text + cx + E.cvBuf.len - 1, line->text + cx, line->len - cx);
-    line->len = E.cvBuf.len + line->len;
-    memcpy(line->text + cx, E.cvBuf.text, E.cvBuf.len);
-    updateRow(line);
+    if(!line)
+    {
+        addRow(c_y, E.cvBuf.text, E.cvBuf.len);
+    }
+    else{
+        line->text = realloc(line->text, sizeof(char) * (E.cvBuf.len + line->len));
+        memmove(line->text + cx + E.cvBuf.len - 1, line->text + cx, line->len - cx);
+        line->len = E.cvBuf.len + line->len;
+        memcpy(line->text + cx, E.cvBuf.text, E.cvBuf.len);
+        updateRow(line);
+    }
 }
 
 actionType getInverseAction(actionType action)
