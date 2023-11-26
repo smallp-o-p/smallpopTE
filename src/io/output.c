@@ -34,14 +34,14 @@ void drawRows(char c)
     for (int y = 0; y < E.rows-2; y++)
     {
         int filerow = y + E.rowOffset;
-
         if (filerow >= E.numRowsofText)
         {
             printw("%c\n", c);
         }
         else
         {
-            int len = E.textRows[filerow].renderSize - E.colOffset;
+            tRow* row = rowAt(filerow);
+            int len = row->renderSize - E.colOffset;
             if (len < 0)
             {
                 len = 0;
@@ -51,7 +51,7 @@ void drawRows(char c)
             {
                 len = E.cols;
             }
-            char* line = &E.textRows[filerow].render[E.colOffset];
+            char* line = row->render + E.colOffset;
             if(filerow == c_y && E.cx_leftmost != E.cx_rightmost)
             {
                 addnstr(line, E.cx_leftmost);
@@ -73,7 +73,7 @@ void scrollHandler()
     E.render_x = 0;
     if (E.cursor_y < E.numRowsofText)
     {
-        E.render_x = rowCx2Rx(&E.textRows[E.cursor_y], E.cursor_x);
+        E.render_x = rowCx2Rx(rowAt(E.cursor_y), E.cursor_x);
     }
     if (E.cursor_y < E.rowOffset) // are we inside the reference frame
     {

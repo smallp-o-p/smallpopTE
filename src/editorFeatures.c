@@ -83,7 +83,7 @@ void removeNewLines(rememberStruct* previousState)
         else
         {
             updateRowInternalText(previousState->rowIndexes[i], previousState->rows[i]->text, previousState->rows[i]->len);
-            updateRow(&E.textRows[previousState->rowIndexes[i]]);
+            updateRow(E.textRows[previousState->rowIndexes[i]]);
         }
     }
 }
@@ -99,7 +99,7 @@ void restoreNewLines(rememberStruct* previousState)
         else
         {
             updateRowInternalText(previousState->rowIndexes[i], previousState->rows[i]->text, previousState->rows[i]->len);
-            updateRow(&E.textRows[previousState->rowIndexes[i]]);
+            updateRow(E.textRows[previousState->rowIndexes[i]]);
         }
         
     }
@@ -112,10 +112,10 @@ void undoInsertionDeletion(rememberStruct* previousState)
         return;
     }
 
-    free(E.textRows[previousState->rows[0]->rowNum].text);
+    free(rowAt(previousState->rows[0]->rowNum)->text);
 
     updateRowInternalText(previousState->rows[0]->rowNum, previousState->rows[0]->text, previousState->rows[0]->len);
-    updateRow(&E.textRows[previousState->rows[0]->rowNum]);
+    updateRow(E.textRows[previousState->rows[0]->rowNum]);
 }
 
 void rememberRows(uint32_t *rowNumbers, uint32_t numRows, actionType lastAction)
@@ -149,6 +149,7 @@ void rememberRows(uint32_t *rowNumbers, uint32_t numRows, actionType lastAction)
     {
         pastTextRow *ptr = malloc(sizeof(pastTextRow));
         ptr->rowNum = rowNumbers[i];
+        tRow* row = rowAt(rowNumbers[i]);
         if (rowNumbers[i] >= E.numRowsofText)
         {
             ptr->len = 0;
@@ -156,9 +157,9 @@ void rememberRows(uint32_t *rowNumbers, uint32_t numRows, actionType lastAction)
         }
         else
         {
-            ptr->len = E.textRows[rowNumbers[i]].len;
-            ptr->text = calloc(E.textRows[rowNumbers[i]].len, sizeof(char));
-            strncpy(ptr->text, E.textRows[rowNumbers[i]].text, E.textRows[rowNumbers[i]].len);
+            ptr->len = row->len;
+            ptr->text = calloc(row->len, sizeof(char));
+            strncpy(ptr->text, row->text, row->len);
         }
         iRemember->rowIndexes[i] = rowNumbers[i];
         iRemember->rows[i] = ptr;

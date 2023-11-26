@@ -15,18 +15,20 @@ void addRow(int at, char *str, size_t len)
     }
     // make space for a new row of text
     // move everything below the row pointed to by at down 1
-    E.textRows = realloc(E.textRows, sizeof(struct rowOfText) * (E.numRowsofText + 1));
+    E.textRows = realloc(E.textRows, sizeof(struct rowOfText*) * (E.numRowsofText + 1));
+    E.textRows[at] = malloc(sizeof(tRow)); 
+
     memmove(E.textRows + at + 1, E.textRows + at, sizeof(struct rowOfText) * (E.numRowsofText - at));
 
-    E.textRows[at].len = len;
-    E.textRows[at].text = malloc(sizeof(char) * len + 1);
-    memcpy(E.textRows[at].text, str, len);
+    E.textRows[at]->len = len;
+    E.textRows[at]->text = malloc(sizeof(char) * len + 1);
+    memcpy(E.textRows[at]->text, str, len);
 
-    E.textRows[at].text[len] = '\0';
-    E.textRows[at].renderSize = 0;
-    E.textRows[at].render = NULL;
+    E.textRows[at]->text[len] = '\0';
+    E.textRows[at]->renderSize = 0;
+    E.textRows[at]->render = NULL;
 
-    updateRow(&E.textRows[at]);
+    updateRow(E.textRows[at]);
     E.numRowsofText++;
     E.dirty = true;
 }
@@ -85,9 +87,9 @@ void removeRow(int row)
 {
     if (row < 0 || row >= E.numRowsofText)
         return;
-    free(E.textRows[row].render);
-    free(E.textRows[row].text);
-    memmove(&E.textRows[row], &E.textRows[row + 1], sizeof(struct rowOfText) * (E.numRowsofText - row - 1));
+    free(E.textRows[row]->render);
+    free(E.textRows[row]->text);
+    memmove(E.textRows[row], E.textRows[row + 1], sizeof(struct rowOfText) * (E.numRowsofText - row - 1));
     E.numRowsofText--;
     E.dirty = true;
 }
@@ -112,7 +114,7 @@ void insertChar(int c)
     {
         addRow(E.numRowsofText, "", 0);
     }
-    insertCharInRow(c, &E.textRows[E.cursor_y], E.cursor_x);
+    insertCharInRow(c, E.textRows[E.cursor_y], E.cursor_x);
     E.cursor_x++;
 }
 
@@ -137,7 +139,7 @@ void delChar(int col, int op)
     {
         return;
     }
-    struct rowOfText *tRow = &E.textRows[E.cursor_y];
+    struct rowOfText *tRow = E.textRows[E.cursor_y];
     delCharInRow(op, tRow, col);
 }
 
@@ -164,7 +166,7 @@ void delCharInRow(int op, struct rowOfText *row, int col) // this seems to work 
     case (KEY_BACKSPACE): // delete character to the left of cursor
         if (col == 0)
         {
-            E.cursor_x = E.textRows[E.cursor_y - 1].len;
+            E.cursor_x = rowAt(E.cursor_y - 1)->len;
             appendRowText(row - 1, row->text, row->len);
             removeRow(E.cursor_y);
             E.cursor_y--;
@@ -196,7 +198,7 @@ foundPair *searchSubstr(char *needle, int *countToUpdate)
 
     for (int i = 0; i < E.numRowsofText; i++)
     {
-        char *haystack = E.textRows[i].text;
+        char *haystack = rowAt(i)->text;
         char *temp = haystack;
         while ((temp = strstr(temp, needle)))
         {
@@ -224,7 +226,13 @@ foundPair *searchSubstr(char *needle, int *countToUpdate)
 
 void updateRowInternalText(uint32_t rowNum, char *text, uint32_t len) // i got tired of doing this all the time
 {
-    free(E.textRows[rowNum].text); 
-    E.textRows[rowNum].text = text;
-    E.textRows[rowNum].len = len;
+    tRow* row = rowAt(rowNum);
+    free(row->text); 
+    row->text = text;
+    row->len = len;
+}
+
+tRow* rowAt(uint32_t cursor_y)
+{
+    return E.textRows[cursor_y]; 
 }
