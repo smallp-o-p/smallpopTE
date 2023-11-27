@@ -15,20 +15,20 @@ void addRow(int at, char *str, size_t len)
     }
     // make space for a new row of text
     // move everything below the row pointed to by at down 1
-    E.textRows = realloc(E.textRows, sizeof(struct rowOfText*) * (E.numRowsofText + 1));
-    E.textRows[at] = malloc(sizeof(tRow)); 
+    E.textRows = realloc(E.textRows, sizeof(tRow*) * (E.numRowsofText + 1));
+    rowAt(at) = malloc(sizeof(tRow)); 
 
-    memmove(E.textRows + at + 1, E.textRows + at, sizeof(struct rowOfText) * (E.numRowsofText - at));
+    memmove(E.textRows + at + 1, E.textRows + at, sizeof(tRow*) * (E.numRowsofText - at));
 
-    E.textRows[at]->len = len;
-    E.textRows[at]->text = malloc(sizeof(char) * len + 1);
+    rowAt(at)->len = len;
+    rowAt(at)->text = malloc(sizeof(char) * len + 1);
     memcpy(E.textRows[at]->text, str, len);
 
-    E.textRows[at]->text[len] = '\0';
-    E.textRows[at]->renderSize = 0;
-    E.textRows[at]->render = NULL;
+    rowAt(at)->text[len] = '\0';
+    rowAt(at)->renderSize = 0;
+    rowAt(at)->render = NULL;
 
-    updateRow(E.textRows[at]);
+    updateRow(rowAt(at));
     E.numRowsofText++;
     E.dirty = true;
 }
@@ -230,9 +230,4 @@ void updateRowInternalText(uint32_t rowNum, char *text, uint32_t len) // i got t
     free(row->text); 
     row->text = text;
     row->len = len;
-}
-
-tRow* rowAt(uint32_t cursor_y)
-{
-    return E.textRows[cursor_y]; 
 }

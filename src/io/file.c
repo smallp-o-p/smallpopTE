@@ -102,5 +102,6 @@ char* rowsToCharBuffer(int* len, tRow** rows, int numRows){
         ptr+= rows[j]->len;
         (*ptr++) = '\n';
     }
+    (*ptr) = '\0'; 
     return buffer; 
 }

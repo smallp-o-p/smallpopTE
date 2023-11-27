@@ -102,7 +102,7 @@ void processKey()
   break;
   case CTRL_MACRO('l'): // select line
   {
-    E.cx_leftmost = 0; // poor naming on this one
+    E.cx_leftmost = 0; 
     E.cx_rightmost = E.textRows[c_y]->len;
     c_x = E.textRows[c_y]->len;
     break;
@@ -111,19 +111,17 @@ void processKey()
     break;
   case (KEY_SLEFT):
     moveCursor(KEY_LEFT);
-    if (E.cx_leftmost > 0)
-    {
-      E.cx_leftmost = c_x;
-    }
-    
+    E.cx_leftmost = c_x;
     break; 
   case (KEY_SRIGHT):
-    moveCursor(KEY_RIGHT);
-    if (E.cx_rightmost < E.textRows[c_y]->len)
+    if(E.cursor_x < rowAt(c_y)->len)
+    {
+      moveCursor(KEY_RIGHT);
+    }
+    if (E.cx_rightmost < E.textRows[c_y]->len - 1)
     {
       E.cx_rightmost = c_x;
     }
-    
     break; 
   case (KEY_HOME):
   case (KEY_END):

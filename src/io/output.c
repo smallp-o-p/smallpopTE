@@ -54,11 +54,13 @@ void drawRows(char c)
             char* line = row->render + E.colOffset;
             if(filerow == c_y && E.cx_leftmost != E.cx_rightmost)
             {
+                // my pointer math might be off 
                 addnstr(line, E.cx_leftmost);
                 attron(A_REVERSE);
-                addnstr(line + E.cx_leftmost, (E.cx_rightmost - E.cx_leftmost) + 1);
+                addnstr(line + E.cx_leftmost, (E.cx_rightmost - E.cx_leftmost) + 1); // 
                 attroff(A_REVERSE);
-                printw("%s\n", line + E.cx_rightmost + 1);
+                // if we selected the entire line then only insert the new line  
+                printw(E.cx_rightmost - E.cx_leftmost < row->len ? "%s\n" : "\n", E.cx_rightmost - E.cx_leftmost < row->len ? line + E.cx_rightmost + 1 : NULL);
             }
             else
             {
