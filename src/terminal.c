@@ -31,7 +31,29 @@ void initColors(){
 
 void cleanup()
 {
-    cleanupStack(E.undoStack);
-    cleanupStack(E.redoStack);
+    cleanupStack(E.undoStack, &freepastTextRows);
+    cleanupStack(E.redoStack, &freepastTextRows);
     endwin(); 
 }
+
+void freepastTextRows(void* past)
+{
+    rememberStruct* casted = (rememberStruct*) past;
+
+    if(casted->rows)
+    {
+        for(int i = 0; i<casted->numRows; i++){
+            if(casted->rows[i]->text)
+            {
+                free(casted->rows[i]->text);
+            }
+            free(casted->rows[i]);
+        }
+    }
+    if(casted->rowIndexes)
+    {
+        free(casted->rowIndexes);
+    }
+    free(casted); 
+}
+

@@ -85,14 +85,14 @@ char* rowsToCharBuffer(int* len, tRow** rows, int numRows){
 
     int totalLen = 0;
     for(int i = 0; i<numRows; i++){
-        totalLen += (rows[i])->len;
+        totalLen += (rows[i])->len + 1;
     }
 
     *len = totalLen;
     if(totalLen == 0){
         return NULL; 
     }
-    char* buffer = malloc(totalLen); 
+    char* buffer = malloc(sizeof(char) * totalLen+1); 
     char* ptr = buffer; 
 
     memset(buffer, '\0', sizeof(totalLen));
@@ -102,6 +102,5 @@ char* rowsToCharBuffer(int* len, tRow** rows, int numRows){
         ptr+= rows[j]->len;
         (*ptr++) = '\n';
     }
-    (*ptr) = '\0'; 
     return buffer; 
 }

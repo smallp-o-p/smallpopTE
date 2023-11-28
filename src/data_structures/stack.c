@@ -51,19 +51,19 @@ void *peek(Stack *stack)
     return stack->data[stack->top];
 }
 
-void clearStack(Stack *stack){ 
+void clearStack(Stack *stack, void(*structClearFunc)(void*)){ 
     if(stack == NULL){
         return; 
     }
     if(stack->top != -1){
         void* popped;
         while((popped = pop(stack))){
-            free(popped);
+            structClearFunc(popped);
         }
     } 
 }
 
-void cleanupStack(Stack *stack)
+void cleanupStack(Stack *stack, void(*structClearFunc)(void*))
 {
     if(stack == NULL){
         return; 
@@ -71,9 +71,11 @@ void cleanupStack(Stack *stack)
     if(stack->top != -1){
         void* popped; 
         while((popped = pop(stack))){
-            free(popped);
+            structClearFunc(popped);
         }
-        free(stack->data);
+        while(stack->data++){
+            free(stack->data);
+        }
     }   
     free(stack);
 }

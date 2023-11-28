@@ -100,21 +100,24 @@ void copy(tRow* line, uint32_t cx_leftmost, uint32_t cx_rightmost)
     E.cvBuf.text = realloc(E.cvBuf.text, sizeof(char) * (rangeToCopy));
     E.cvBuf.len = rangeToCopy; 
     strncpy(E.cvBuf.text, line->text + (rangeToCopy == 1 ? c_x : cx_leftmost), (rangeToCopy));
+    setStatusMessage(NORMAL, "Copied %d bytes from line %d", rangeToCopy, c_y+1);
 }
 
 void paste(tRow* line, uint32_t cx)
 {
-    if(!line)
+    if(c_y >= E.numRowsofText || !line)
     {
         addRow(c_y, E.cvBuf.text, E.cvBuf.len);
     }
     else{
         line->text = realloc(line->text, sizeof(char) * (E.cvBuf.len + line->len));
-        memmove(line->text + cx + E.cvBuf.len - 1, line->text + cx, line->len - cx);
+        memmove(line->text + cx + E.cvBuf.len, line->text + cx, line->len - cx);
         line->len = E.cvBuf.len + line->len;
         memcpy(line->text + cx, E.cvBuf.text, E.cvBuf.len);
         updateRow(line);
+        c_x = line->len; 
     }
+    setStatusMessage(NORMAL, "Pasted %d bytes onto line %d", E.cvBuf.len, c_y+1);
 }
 
 actionType getInverseAction(actionType action)

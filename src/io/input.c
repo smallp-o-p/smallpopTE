@@ -139,7 +139,7 @@ void processKey()
         rememberRows(&c_y, 1, INSERT);
       }
       insertChar(c);
-      clearStack(E.redoStack);
+      clearStack(E.redoStack, &freepastTextRows);
     }
     break;
   }

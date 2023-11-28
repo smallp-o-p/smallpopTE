@@ -15,9 +15,9 @@ typedef struct stackImplementation
 
 void push(Stack* stack, void* ptr);
 void* pop(Stack* stack);
-void clearStack(Stack* stack); 
+void clearStack(Stack* stack, void(*structClearFunc)(void*)); 
 Stack* initStack();
-void cleanupStack(Stack* stack);
+void cleanupStack(Stack* stack, void(*structClearfunc)(void*));
 void* peek(Stack* stack);
 
 

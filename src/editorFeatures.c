@@ -112,8 +112,6 @@ void undoInsertionDeletion(rememberStruct* previousState)
         return;
     }
 
-    free(rowAt(previousState->rows[0]->rowNum)->text);
-
     updateRowInternalText(previousState->rows[0]->rowNum, previousState->rows[0]->text, previousState->rows[0]->len);
     updateRow(E.textRows[previousState->rows[0]->rowNum]);
 }
@@ -126,7 +124,7 @@ void rememberRows(uint32_t *rowNumbers, uint32_t numRows, actionType lastAction)
     }
 
     rememberStruct *iRemember = malloc(sizeof(rememberStruct));
-    iRemember->rows = malloc(sizeof(pastTextRow) * numRows);
+    iRemember->rows = malloc(sizeof(pastTextRow*) * numRows);
     iRemember->numRows = numRows;
     iRemember->rowIndexes = malloc(sizeof(uint32_t) * numRows);
 
