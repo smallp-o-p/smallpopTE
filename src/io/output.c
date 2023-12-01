@@ -108,7 +108,7 @@ void drawStatusBar()
     }
     addstr(statusText); 
 
-    int rlen = snprintf(rstatus, sizeof(rstatus), "%d/%d", E.cursor_y + 1, E.numRowsofText + 1);
+    int rlen = snprintf(rstatus, sizeof(rstatus), "%d ; %d/%d", E.cursor_x + 1, E.cursor_y + 1, E.numRowsofText + 1);
     while (len < E.cols)
     {
         if (E.cols - len == rlen)

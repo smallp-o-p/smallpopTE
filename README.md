@@ -1,6 +1,6 @@
 # smallpop's Terminal Text Editor
 
-> A small terminal text editor for Linux built using ncurses.
+> A small terminal text editor for Linux built with the ncurses library.
 
 ## Build Steps
 <ol>
@@ -13,7 +13,7 @@
 </ol>
 
 ## Usage 
-> {PathToBuiltExecutable} {FileDirectory}
+> {DirectoryOfExecutable}/smallpop {FileToOpen}
 
 ## About
 

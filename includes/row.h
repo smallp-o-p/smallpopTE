@@ -11,4 +11,5 @@ void delCharInRow(int op, struct rowOfText* row, int col);
 void appendRowText(struct rowOfText*, char* str, int len);
 void updateRowInternalText(uint32_t rowNum, char *text, uint32_t len);
 foundPair* searchSubstr(char* needle, int* countToUpdate); 
+void freepastTextRows(void* past);
 #define rowAt(c_y) E.textRows[c_y] 

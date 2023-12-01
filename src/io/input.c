@@ -57,7 +57,7 @@ void processKey()
     redo();
     break;
   case (CTRL_MACRO('c')):
-    copy(rowAt(c_y), E.cx_leftmost, E.cx_rightmost);
+    copy(E.cy_upper, E.cy_lower, E.cx_leftmost, E.cx_rightmost);
     break;
   case (CTRL_MACRO('v')):
     paste(rowAt(c_y), c_x);
@@ -122,11 +122,11 @@ void processKey()
     {
       E.cx_rightmost = c_x;
     }
-    break; 
-  case (KEY_HOME):
-  case (KEY_END):
+    break;
   case (KEY_UP):
   case (KEY_DOWN):
+  case (KEY_HOME):
+  case (KEY_END):
   case (KEY_LEFT):
   case (KEY_RIGHT):
     moveCursor(c);
@@ -147,6 +147,11 @@ void processKey()
   {
     E.cx_leftmost = c_x;
     E.cx_rightmost = c_x;
+  }
+  if(E.cy_upper == E.cy_lower)
+  {
+    E.cy_upper = c_y;
+    E.cy_lower = c_y; 
   }
 }
 

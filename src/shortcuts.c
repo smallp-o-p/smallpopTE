@@ -86,38 +86,97 @@ void clrRightOfCursor(int col, tRow *line)
     E.dirty = true;
 }
 
-void copy(tRow* line, uint32_t cx_leftmost, uint32_t cx_rightmost)
+void copy(uint32_t cy_upper, uint32_t cy_lower, uint32_t cx_leftmost, uint32_t cx_rightmost) // can only copy a continuous block
 {
-    int rangeToCopy; 
-    if(cx_leftmost == cx_rightmost)
+    if(E.cvBuf.rows){
+       for(int i = 0; i< E.cvBuf.numLines; i++)
+       {
+        freepastTextRows(&E.cvBuf.rows[i]);
+       }
+    };  
+
+    E.cvBuf.numLines = 0;
+    E.cvBuf.byteCount = 0; 
+    
+    int rangeToCopy, linesToCopy; 
+    rangeToCopy = cx_rightmost - cx_leftmost;
+    linesToCopy = cy_upper - cy_lower + 1;
+
+    E.cvBuf.rows = realloc(E.cvBuf.rows, sizeof(pastTextRow) * linesToCopy);
+    
+    
+    if(linesToCopy == 1)
     {
-        rangeToCopy = 1; 
+        pastTextRow row = {rangeToCopy, c_y};
+        row.text = calloc(rangeToCopy, sizeof(char));
+        row.text = strncpy(row.text, rowAt(c_y)->text + cx_leftmost, rangeToCopy);
+        E.cvBuf.rows[0] = row;
+        E.cvBuf.numLines = 1;  
+        E.cvBuf.byteCount += rangeToCopy; 
     }
     else
     {
-        rangeToCopy = cx_rightmost - cx_leftmost + 1; 
+        // in this case rangeToCopy becomes useless
+        int rowIndex = 0;
+
+        for(int i = linesToCopy; i >= 0; i--)
+        {
+            pastTextRow row;
+            uint32_t rowLen;
+            char* copySrc; 
+            
+            if(i == linesToCopy) // first line to copy
+            {
+                rowLen = rowAt(c_y - linesToCopy)->len - cx_leftmost;                
+                copySrc = rowAt(c_y - linesToCopy)->text + cx_leftmost;
+            }
+            else if(i == 0) // last line to copy
+            {
+                rowLen = (rowAt(c_y)->len - cx_rightmost) + 1;
+                copySrc = rowAt(c_y)->text; 
+            }
+            else // everything in between
+            {
+                rowLen = rowAt(c_y - i)->len;
+                copySrc = rowAt(c_y - i)->text;
+            }
+
+            row.len = rowLen;
+            row.text = calloc(rowLen, sizeof(char));
+            row.text = strncpy(row.text, copySrc, rowLen);
+            row.rowNum = c_y - i; 
+
+            E.cvBuf.numLines++; 
+            E.cvBuf.rows[rowIndex++] = row;
+            E.cvBuf.byteCount += rowLen; 
+        }
     }
-    E.cvBuf.text = realloc(E.cvBuf.text, sizeof(char) * (rangeToCopy));
-    E.cvBuf.len = rangeToCopy; 
-    strncpy(E.cvBuf.text, line->text + (rangeToCopy == 1 ? c_x : cx_leftmost), (rangeToCopy));
-    setStatusMessage(NORMAL, "Copied %d bytes from line %d", rangeToCopy, c_y+1);
+
+    setStatusMessage(NORMAL, "Copied %d bytes from lines %d - %d", rangeToCopy, cy_lower + 1, cy_upper + 1);
 }
 
-void paste(tRow* line, uint32_t cx)
+void paste()
 {
-    if(c_y >= E.numRowsofText || !line)
+    if(!E.cvBuf.rows)
     {
-        addRow(c_y, E.cvBuf.text, E.cvBuf.len);
+        return; 
     }
-    else{
-        line->text = realloc(line->text, sizeof(char) * (E.cvBuf.len + line->len));
-        memmove(line->text + cx + E.cvBuf.len, line->text + cx, line->len - cx);
-        line->len = E.cvBuf.len + line->len;
-        memcpy(line->text + cx, E.cvBuf.text, E.cvBuf.len);
-        updateRow(line);
-        c_x = line->len; 
+    for(int i = 0; i<E.cvBuf.numLines; i++) // insert first line on current cursor line and add rows
+    {
+        if(i == 0 && c_y < E.numRowsofText)
+        {
+            rowAt(c_y)->text = realloc(rowAt(c_y)->text, rowAt(c_y)->len + 1 + E.cvBuf.rows[i].len + 1);
+            memmove(rowAt(c_y)->text + c_x + E.cvBuf.rows[i].len, rowAt(c_y)->text + c_x, rowAt(c_y)->len - c_x + 1);  
+            memcpy(rowAt(c_y)->text + c_x, E.cvBuf.rows[i].text, E.cvBuf.rows[i].len);
+            rowAt(c_y)->len += E.cvBuf.rows[i].len; 
+            updateRow(rowAt(c_y)); 
+        }
+        else
+        {
+            addRow(c_y + i, E.cvBuf.rows[i].text, E.cvBuf.rows[i].len); 
+        }
     }
-    setStatusMessage(NORMAL, "Pasted %d bytes onto line %d", E.cvBuf.len, c_y+1);
+    setStatusMessage(NORMAL, "Pasted %d bytes to lines %d to %d", E.cvBuf.byteCount, c_y + 1, c_y + E.cvBuf.numLines);
 }
 
 actionType getInverseAction(actionType action)

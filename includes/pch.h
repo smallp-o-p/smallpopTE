@@ -23,7 +23,7 @@ typedef enum statusMessageType{
     BAD = 252, 
     CONCERNING,
     NORMAL,
-    GOOD,
+    GOOD
 } msgType;
 
 typedef enum syntaxTokenType{
@@ -43,11 +43,12 @@ typedef struct foundPairN{
 struct terminalConfig{
     int cursor_x, cursor_y; 
     int render_x; 
-    int cx_rightmost, cx_leftmost; 
+    int cx_rightmost, cx_leftmost, cy_upper, cy_lower; 
     int rows;
     int rowOffset;
     int cols; 
     bool dirty; 
+    bool lineSelMode; 
     int colOffset; 
     int numRowsofText; 
     struct rowOfText** textRows; 
@@ -59,6 +60,7 @@ struct terminalConfig{
     Stack* undoStack; 
     Stack* redoStack; 
     copyBuffer cvBuf; 
+
 } extern E; 
 
 #define c_y E.cursor_y

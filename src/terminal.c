@@ -2,7 +2,7 @@
 #include "terminal.h"
 #include "pch.h"
 #include "error.h"
-
+#include "row.h"
 struct terminalConfig E;
 
 void initTerminal()
@@ -20,6 +20,7 @@ void initTerminal()
     }
 }
 
+
 void initColors(){
     start_color(); 
     assume_default_colors(-1, -1);
@@ -34,26 +35,7 @@ void cleanup()
     cleanupStack(E.undoStack, &freepastTextRows);
     cleanupStack(E.redoStack, &freepastTextRows);
     endwin(); 
+    
 }
 
-void freepastTextRows(void* past)
-{
-    rememberStruct* casted = (rememberStruct*) past;
-
-    if(casted->rows)
-    {
-        for(int i = 0; i<casted->numRows; i++){
-            if(casted->rows[i]->text)
-            {
-                free(casted->rows[i]->text);
-            }
-            free(casted->rows[i]);
-        }
-    }
-    if(casted->rowIndexes)
-    {
-        free(casted->rowIndexes);
-    }
-    free(casted); 
-}
 

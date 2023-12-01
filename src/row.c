@@ -21,7 +21,7 @@ void addRow(int at, char *str, size_t len)
     memmove(E.textRows + at + 1, E.textRows + at, sizeof(tRow*) * (E.numRowsofText - at));
 
     rowAt(at)->len = len;
-    rowAt(at)->text = malloc(sizeof(char) * len + 1);
+    rowAt(at)->text = malloc(sizeof(char) * (len + 1));
     memcpy(E.textRows[at]->text, str, len);
 
     rowAt(at)->text[len] = '\0';
@@ -230,4 +230,25 @@ void updateRowInternalText(uint32_t rowNum, char *text, uint32_t len) // i got t
     free(row->text); 
     row->text = text;
     row->len = len;
+}
+
+void freepastTextRows(void* past)
+{
+    rememberStruct* casted = (rememberStruct*) past;
+
+    if(casted->rows)
+    {
+        for(int i = 0; i<casted->numRows; i++){
+            if(casted->rows[i]->text)
+            {
+                free(casted->rows[i]->text);
+            }
+            free(casted->rows[i]);
+        }
+    }
+    if(casted->rowIndexes)
+    {
+        free(casted->rowIndexes);
+    }
+    free(casted); 
 }

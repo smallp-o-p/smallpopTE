@@ -2,6 +2,12 @@
 #include <stdint.h>
 #include <time.h>
 
+typedef struct rowOfText tRow; 
+
+typedef struct softDeletedRowOfText pastTextRow; 
+
+typedef enum actionType actionType; 
+
 typedef struct rowOfText{
     int len; // length of string, length of array
     char* text; // raw text 
@@ -10,19 +16,20 @@ typedef struct rowOfText{
     char* highLighting; 
 } tRow;  
 
-typedef struct copyText{
-    uint32_t len;
-    char* text;
+typedef struct copyBuffer{
+    pastTextRow* rows; 
+    uint32_t numLines; 
+    uint32_t byteCount; 
 } copyBuffer; 
 
-typedef enum actions{
+typedef enum actionType{
     INITIAL_STATE, 
     INSERT,
     REMOVE,
     NEWLINE,
     RM_NEWLINE, 
     CURRENT_STATE, 
-}actionType;
+} actionType;
 
 typedef struct softDeletedRowOfText{
     int len;

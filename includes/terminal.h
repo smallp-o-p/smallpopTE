@@ -5,7 +5,6 @@ void initColors();
 int readKey(); 
 int handleEsc(char c);
 int getWindowSize(int* rows, int* cols); 
-void freepastTextRows(void* past);
 
 
 

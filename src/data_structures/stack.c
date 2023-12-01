@@ -4,7 +4,7 @@
 Stack *initStack()
 {
     Stack *newStack = malloc(sizeof(Stack));
-    newStack->data = malloc(sizeof(void*) * INITIAL_STACK_SIZE); // bruh. 
+    newStack->data = malloc(sizeof(void*) * INITIAL_STACK_SIZE);
     newStack->top = -1;
     newStack->stackSize = INITIAL_STACK_SIZE;
 
@@ -73,9 +73,7 @@ void cleanupStack(Stack *stack, void(*structClearFunc)(void*))
         while((popped = pop(stack))){
             structClearFunc(popped);
         }
-        while(stack->data++){
-            free(stack->data);
-        }
-    }   
+    }
+    free(stack->data);  
     free(stack);
 }

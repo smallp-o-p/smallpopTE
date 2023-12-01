@@ -5,5 +5,3 @@ void rememberRows(int* rowNumbers, int numRows, actionType lastAction);
 void removeNewLines(rememberStruct* previousState);
 void restoreNewLines(rememberStruct* previousState);
 void undoInsertionDeletion(rememberStruct* previousState);
-
-
