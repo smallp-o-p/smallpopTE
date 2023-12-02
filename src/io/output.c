@@ -40,7 +40,7 @@ void drawRows(char c)
         }
         else
         {
-            tRow* row = rowAt(filerow);
+            tRow* row = rowAtAddr(filerow);
             int len = row->renderSize - E.colOffset;
             if (len < 0)
             {
@@ -75,7 +75,7 @@ void scrollHandler()
     E.render_x = 0;
     if (E.cursor_y < E.numRowsofText)
     {
-        E.render_x = rowCx2Rx(rowAt(E.cursor_y), E.cursor_x);
+        E.render_x = rowCx2Rx(rowAtAddr(E.cursor_y), E.cursor_x);
     }
     if (E.cursor_y < E.rowOffset) // are we inside the reference frame
     {

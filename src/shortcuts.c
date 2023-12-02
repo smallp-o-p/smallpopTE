@@ -86,33 +86,33 @@ void clrRightOfCursor(int col, tRow *line)
     E.dirty = true;
 }
 
-void copy(uint32_t cy_upper, uint32_t cy_lower, uint32_t cx_leftmost, uint32_t cx_rightmost) // can only copy a continuous block
+void copy(copyBuffer* cBuf, uint32_t cy_upper, uint32_t cy_lower, uint32_t cx_leftmost, uint32_t cx_rightmost) // can only copy a continuous block
 {
-    if(E.cvBuf.rows){
+    if(cBuf->rows){
        for(int i = 0; i< E.cvBuf.numLines; i++)
        {
         freepastTextRows(&E.cvBuf.rows[i]);
        }
     };  
 
-    E.cvBuf.numLines = 0;
-    E.cvBuf.byteCount = 0; 
+    cBuf->numLines = 0;
+
+    cBuf->byteCount = 0; 
     
     int rangeToCopy, linesToCopy; 
     rangeToCopy = cx_rightmost - cx_leftmost;
     linesToCopy = cy_upper - cy_lower + 1;
 
-    E.cvBuf.rows = realloc(E.cvBuf.rows, sizeof(pastTextRow) * linesToCopy);
-    
+    cBuf->rows = realloc(cBuf->rows, sizeof(pastTextRow) * linesToCopy);
     
     if(linesToCopy == 1)
     {
         pastTextRow row = {rangeToCopy, c_y};
         row.text = calloc(rangeToCopy, sizeof(char));
-        row.text = strncpy(row.text, rowAt(c_y)->text + cx_leftmost, rangeToCopy);
-        E.cvBuf.rows[0] = row;
-        E.cvBuf.numLines = 1;  
-        E.cvBuf.byteCount += rangeToCopy; 
+        row.text = strncpy(row.text, rowAt(c_y).text + cx_leftmost, rangeToCopy);
+        cBuf->rows[0] = row;
+        cBuf->numLines = 1;  
+        cBuf->byteCount += rangeToCopy; 
     }
     else
     {
@@ -127,18 +127,18 @@ void copy(uint32_t cy_upper, uint32_t cy_lower, uint32_t cx_leftmost, uint32_t c
             
             if(i == linesToCopy) // first line to copy
             {
-                rowLen = rowAt(c_y - linesToCopy)->len - cx_leftmost;                
-                copySrc = rowAt(c_y - linesToCopy)->text + cx_leftmost;
+                rowLen = rowAt(c_y - linesToCopy).len - cx_leftmost;                
+                copySrc = rowAt(c_y - linesToCopy).text + cx_leftmost;
             }
             else if(i == 0) // last line to copy
             {
-                rowLen = (rowAt(c_y)->len - cx_rightmost) + 1;
-                copySrc = rowAt(c_y)->text; 
+                rowLen = (rowAt(c_y).len - cx_rightmost) + 1;
+                copySrc = rowAt(c_y).text; 
             }
             else // everything in between
             {
-                rowLen = rowAt(c_y - i)->len;
-                copySrc = rowAt(c_y - i)->text;
+                rowLen = rowAt(c_y - i).len;
+                copySrc = rowAt(c_y - i).text;
             }
 
             row.len = rowLen;
@@ -146,13 +146,12 @@ void copy(uint32_t cy_upper, uint32_t cy_lower, uint32_t cx_leftmost, uint32_t c
             row.text = strncpy(row.text, copySrc, rowLen);
             row.rowNum = c_y - i; 
 
-            E.cvBuf.numLines++; 
-            E.cvBuf.rows[rowIndex++] = row;
-            E.cvBuf.byteCount += rowLen; 
+            cBuf->numLines++; 
+            cBuf->rows[rowIndex++] = row;
+            cBuf->byteCount += rowLen; 
         }
     }
 
-    setStatusMessage(NORMAL, "Copied %d bytes from lines %d - %d", rangeToCopy, cy_lower + 1, cy_upper + 1);
 }
 
 void paste()
@@ -165,11 +164,11 @@ void paste()
     {
         if(i == 0 && c_y < E.numRowsofText)
         {
-            rowAt(c_y)->text = realloc(rowAt(c_y)->text, rowAt(c_y)->len + 1 + E.cvBuf.rows[i].len + 1);
-            memmove(rowAt(c_y)->text + c_x + E.cvBuf.rows[i].len, rowAt(c_y)->text + c_x, rowAt(c_y)->len - c_x + 1);  
-            memcpy(rowAt(c_y)->text + c_x, E.cvBuf.rows[i].text, E.cvBuf.rows[i].len);
-            rowAt(c_y)->len += E.cvBuf.rows[i].len; 
-            updateRow(rowAt(c_y)); 
+            rowAt(c_y).text = realloc(rowAt(c_y).text, rowAt(c_y).len + 1 + E.cvBuf.rows[i].len + 1);
+            memmove(rowAt(c_y).text + c_x + E.cvBuf.rows[i].len, rowAt(c_y).text + c_x, rowAt(c_y).len - c_x + 1);  
+            memcpy(rowAt(c_y).text + c_x, E.cvBuf.rows[i].text, E.cvBuf.rows[i].len);
+            rowAt(c_y).len += E.cvBuf.rows[i].len; 
+            updateRow(rowAtAddr(c_y)); 
         }
         else
         {

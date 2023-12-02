@@ -81,11 +81,11 @@ int writeToFile(char *fileName)
 }
 
 
-char* rowsToCharBuffer(int* len, tRow** rows, int numRows){
+char* rowsToCharBuffer(int* len, tRow* rows, int numRows){
 
     int totalLen = 0;
     for(int i = 0; i<numRows; i++){
-        totalLen += (rows[i])->len + 1;
+        totalLen += (rows[i]).len + 1;
     }
 
     *len = totalLen;
@@ -98,8 +98,8 @@ char* rowsToCharBuffer(int* len, tRow** rows, int numRows){
     memset(buffer, '\0', sizeof(totalLen));
 
     for(int j = 0; j< numRows; j++){
-        memcpy(ptr, rows[j]->text, rows[j]->len);
-        ptr+= rows[j]->len;
+        memcpy(ptr, rows[j].text, rows[j].len);
+        ptr+= rows[j].len;
         (*ptr++) = '\n';
     }
     return buffer; 

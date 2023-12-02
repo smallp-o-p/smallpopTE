@@ -83,7 +83,7 @@ void removeNewLines(rememberStruct* previousState)
         else
         {
             updateRowInternalText(previousState->rowIndexes[i], previousState->rows[i]->text, previousState->rows[i]->len);
-            updateRow(E.textRows[previousState->rowIndexes[i]]);
+            updateRow(rowAtAddr(previousState->rowIndexes[i]));
         }
     }
 }
@@ -99,7 +99,7 @@ void restoreNewLines(rememberStruct* previousState)
         else
         {
             updateRowInternalText(previousState->rowIndexes[i], previousState->rows[i]->text, previousState->rows[i]->len);
-            updateRow(E.textRows[previousState->rowIndexes[i]]);
+            updateRow(rowAtAddr(previousState->rowIndexes[i]));
         }
         
     }
@@ -113,7 +113,7 @@ void undoInsertionDeletion(rememberStruct* previousState)
     }
 
     updateRowInternalText(previousState->rows[0]->rowNum, previousState->rows[0]->text, previousState->rows[0]->len);
-    updateRow(E.textRows[previousState->rows[0]->rowNum]);
+    updateRow(rowAtAddr(previousState->rows[0]->rowNum));
 }
 
 void rememberRows(uint32_t *rowNumbers, uint32_t numRows, actionType lastAction)
@@ -147,7 +147,7 @@ void rememberRows(uint32_t *rowNumbers, uint32_t numRows, actionType lastAction)
     {
         pastTextRow *ptr = malloc(sizeof(pastTextRow));
         ptr->rowNum = rowNumbers[i];
-        tRow* row = rowAt(rowNumbers[i]);
+        tRow* row = rowAtAddr(rowNumbers[i]);
         if (rowNumbers[i] >= E.numRowsofText)
         {
             ptr->len = 0;

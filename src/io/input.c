@@ -57,23 +57,24 @@ void processKey()
     redo();
     break;
   case (CTRL_MACRO('c')):
-    copy(E.cy_upper, E.cy_lower, E.cx_leftmost, E.cx_rightmost);
+    copy(&E.cvBuf, E.cy_upper, E.cy_lower, E.cx_leftmost, E.cx_rightmost);
+    setStatusMessage(NORMAL, "Copied %d bytes from lines %d - %d", E.cvBuf.byteCount, E.cy_upper + 1, E.cy_lower + 1);
     break;
   case (CTRL_MACRO('v')):
-    paste(rowAt(c_y), c_x);
+    paste(rowAtAddr(c_y), c_x);
     break;
   case CTRL_BACKSPACE:
-    backspaceWord(c_x, rowAt(c_y));
+    backspaceWord(c_x, rowAtAddr(c_y));
     break;
   case (KEY_DC):
     delChar(c_x, DELETE);
     break;
   case CTRL_DELETE:
     rememberRows(&c_y, 1, DELETE);
-    deleteWord(c_x, rowAt(c_y));
+    deleteWord(c_x, rowAtAddr(c_y));
     break;
   case CTRL_SHIFT_DELETE:
-    clrRightOfCursor(c_x, rowAt(c_y));
+    clrRightOfCursor(c_x, rowAtAddr(c_y));
     break;
   case KEY_BACKSPACE:
     delChar(c_x, KEY_BACKSPACE);
@@ -102,9 +103,9 @@ void processKey()
   break;
   case CTRL_MACRO('l'): // select line
   {
-    E.cx_leftmost = 0; 
-    E.cx_rightmost = E.textRows[c_y]->len;
-    c_x = E.textRows[c_y]->len;
+    E.cx_leftmost = 0;
+    E.cx_rightmost = rowAt(c_y).len;
+    c_x = rowAt(c_y).len;
     break;
   }
   case '\x1b':
@@ -112,46 +113,47 @@ void processKey()
   case (KEY_SLEFT):
     moveCursor(KEY_LEFT);
     E.cx_leftmost = c_x;
-    break; 
+    break;
   case (KEY_SRIGHT):
-    if(E.cursor_x < rowAt(c_y)->len)
+    if (E.cursor_x < rowAt(c_y).len)
     {
       moveCursor(KEY_RIGHT);
+
+      if (E.cx_rightmost < rowAt(c_y).len - 1)
+      {
+        E.cx_rightmost = c_x;
+      }
+      break;
+    case (KEY_UP):
+    case (KEY_DOWN):
+    case (KEY_HOME):
+    case (KEY_END):
+    case (KEY_LEFT):
+    case (KEY_RIGHT):
+      moveCursor(c);
+      break;
+    default:
+      if (!iscntrl(c))
+      {
+        if (c == ' ')
+        {
+          rememberRows(&c_y, 1, INSERT);
+        }
+        insertChar(c, c_y, c_x);
+        clearStack(E.redoStack, &freepastTextRows);
+      }
+      break;
     }
-    if (E.cx_rightmost < E.textRows[c_y]->len - 1)
+    if (c != CTRL_MACRO('l') && c != KEY_SRIGHT && c != KEY_SLEFT)
     {
+      E.cx_leftmost = c_x;
       E.cx_rightmost = c_x;
     }
-    break;
-  case (KEY_UP):
-  case (KEY_DOWN):
-  case (KEY_HOME):
-  case (KEY_END):
-  case (KEY_LEFT):
-  case (KEY_RIGHT):
-    moveCursor(c);
-    break;
-  default:
-    if (!iscntrl(c))
+    if (E.cy_upper == E.cy_lower)
     {
-      if (c == ' ')
-      {
-        rememberRows(&c_y, 1, INSERT);
-      }
-      insertChar(c);
-      clearStack(E.redoStack, &freepastTextRows);
+      E.cy_upper = c_y;
+      E.cy_lower = c_y;
     }
-    break;
-  }
-  if (c != CTRL_MACRO('l') && c != KEY_SRIGHT && c != KEY_SLEFT)
-  {
-    E.cx_leftmost = c_x;
-    E.cx_rightmost = c_x;
-  }
-  if(E.cy_upper == E.cy_lower)
-  {
-    E.cy_upper = c_y;
-    E.cy_lower = c_y; 
   }
 }
 
@@ -231,7 +233,7 @@ char *makePrompt(char *promptFormat)
 
 void moveCursor(int direction)
 {
-  struct rowOfText *currentRow = (c_y >= E.numRowsofText) ? NULL : E.textRows[c_y];
+  struct rowOfText *currentRow = (c_y >= E.numRowsofText) ? NULL : rowAtAddr(c_y);
   switch (direction)
   {
   case KEY_LEFT:
@@ -242,7 +244,7 @@ void moveCursor(int direction)
     else if (c_y > TOP_FRAME)
     {
       c_y--;
-      c_x = E.textRows[c_y]->len;
+      c_x = rowAt(c_y).len;
     }
     break;
   case KEY_RIGHT:
@@ -274,12 +276,12 @@ void moveCursor(int direction)
   case KEY_END:
     if (c_y < E.numRowsofText)
     {
-      c_x = E.textRows[c_y]->len;
+      c_x = rowAt(c_y).len;
     }
     break;
   }
   // if above line is longer than below, snap the cursor to the last letter of the below line
-  currentRow = (c_y >= E.numRowsofText) ? NULL : E.textRows[c_y];
+  currentRow = (c_y >= E.numRowsofText) ? NULL : rowAtAddr(c_y);
   int rowLen = currentRow ? currentRow->len : 0;
   if (c_x > rowLen)
   {
@@ -295,9 +297,9 @@ void insertNewLine()
   }
   else
   {
-    struct rowOfText *row = E.textRows[c_y];
+    struct rowOfText *row = rowAtAddr(c_y);
     addRow(c_y + 1, row->text + c_x, row->len - c_x);
-    row = E.textRows[c_y] ; // reset the pointer in case realloc moves the block somewhere
+    row = rowAtAddr(c_y); // reset the pointer in case realloc moves the block somewhere
     row->len = c_x;
     row->text[row->len] = '\0';
     updateRow(row);

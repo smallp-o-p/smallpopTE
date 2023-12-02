@@ -51,7 +51,7 @@ struct terminalConfig{
     bool lineSelMode; 
     int colOffset; 
     int numRowsofText; 
-    struct rowOfText** textRows; 
+    struct rowOfText* textRows; 
     struct termios terminal; 
     char* filename; 
     char statusmsg[80];
